@@ -10,5 +10,15 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
