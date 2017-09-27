@@ -19,10 +19,10 @@ import (
 	log "github.com/ligato/cn-infra/logging/logrus"
 	goBgpConfig "github.com/osrg/gobgp/config"
 	goBgpServer "github.com/osrg/gobgp/server"
-	"github.com/fgschwan/bgp-agent/bgp"
-	"github.com/fgschwan/bgp-agent/bgp/nlri"
-	"github.com/fgschwan/bgp-agent/utils/gobgp"
-	"github.com/fgschwan/bgp-agent/utils/parse"
+	"github.com/ligato/bgp-agent/bgp"
+	"github.com/ligato/bgp-agent/bgp/nlri"
+	"github.com/ligato/bgp-agent/utils/gobgp"
+	"github.com/ligato/bgp-agent/utils/parse"
 	"fmt"
 )
 
