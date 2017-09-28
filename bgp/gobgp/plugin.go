@@ -18,36 +18,42 @@ package gobgp
 import (
 	"fmt"
 	"github.com/ligato/bgp-agent/bgp"
-	log "github.com/ligato/cn-infra/logging/logrus"
-	goBgpConfig "github.com/osrg/gobgp/config"
-	goBgpServer "github.com/osrg/gobgp/server"
+	"github.com/ligato/cn-infra/flavors/local"
+	"github.com/osrg/gobgp/config"
+	"github.com/osrg/gobgp/server"
 	"strconv"
 )
 
 // Plugin is GoBGP Ligato BGP Plugin implementation
 type Plugin struct {
-	SessionConfig    *goBgpConfig.Bgp
-	server           *goBgpServer.BgpServer
-	watcherCallbacks []func(*bgp.ReachableRoute)
+	server           *server.BgpServer
+	watcherCallbacks []func(*bgp.ReachableIPRoute)
 	stopWatch        chan bool
 	PluginName       string
-	Log              *log.Logger
+	Deps
 }
 
-//New creates a GoBGP Ligato BGP Plugin implementation
-func New() *Plugin {
-	return &Plugin{watcherCallbacks: []func(*bgp.ReachableRoute){}}
+// Deps combines all needed dependencies for Plugin struct. These dependencies should be injected into Plugin by using constructor's Deps parameter.
+type Deps struct {
+	local.PluginInfraDeps
+	SessionConfig    *config.Bgp
 }
 
-//Init uses plugin config and starts gobgp with dedicated goroutine for watching gobgp.
+
+func New(dependencies Deps) *Plugin {
+	return &Plugin{Deps: dependencies, watcherCallbacks: []func(*bgp.ReachableIPRoute){}}
+}
+
+//Init uses plugin config and starts gobgp with dedicated goroutine for watching gobgp and forwarding best path reachable ip routes to registered watchers.
+//After start of gobgp session, known neighbors from configuration are added to gobgp server.
 func (plugin *Plugin) Init() error {
 	plugin.Log.Debug("Init goBgp plugin")
 	if plugin.SessionConfig == nil {
 		//TODO add config load in case of missing config injection
-		return fmt.Errorf("Can't init GoBGP plugin without configuration.")
+		return fmt.Errorf("Can't init GoBGP plugin without configuration")
 	}
 	plugin.PluginName = plugin.SessionConfig.Global.Config.RouterId
-	plugin.server = goBgpServer.NewBgpServer()
+	plugin.server = server.NewBgpServer()
 	go plugin.server.Serve()
 
 	if err := plugin.startSession(); err != nil {
@@ -57,14 +63,14 @@ func (plugin *Plugin) Init() error {
 		return err
 	}
 	plugin.stopWatch = make(chan bool, 1)
-	w := plugin.server.Watch(goBgpServer.WatchBestPath(true))
+	w := plugin.server.Watch(server.WatchBestPath(true))
 	go plugin.watchChanges(w)
 
 	return nil
 }
 
-// watchChanges watches for events from goBGP server, translates them to bgp.ReachableRoute and sends them to registered watchers.
-func (plugin *Plugin) watchChanges(watcher *goBgpServer.Watcher) {
+// watchChanges watches for events from goBGP server, translates them to bgp.ReachableIPRoute and sends them to registered watchers.
+func (plugin *Plugin) watchChanges(watcher *server.Watcher) {
 	for {
 		select {
 		case <-plugin.stopWatch:
@@ -73,14 +79,14 @@ func (plugin *Plugin) watchChanges(watcher *goBgpServer.Watcher) {
 			return
 		case ev := <-watcher.Event():
 			switch msg := ev.(type) {
-			case *goBgpServer.WatchEventBestPath:
+			case *server.WatchEventBestPath:
 				for _, path := range msg.PathList {
 					as, err := strconv.ParseUint(path.GetAsPath().String(), 10, 32)
 					if err != nil {
 						plugin.Log.Fatal(err)
 						return
 					}
-					pathInfo := bgp.ReachableRoute{
+					pathInfo := bgp.ReachableIPRoute{
 						As:      uint32(as),
 						Prefix:  path.GetNlri().String(),
 						Nexthop: path.GetNexthop(),
@@ -103,7 +109,7 @@ func (plugin *Plugin) Close() error {
 }
 
 //WatchIPRoutes subscribes consumer to notifications for any new learned IP-based routes
-func (plugin *Plugin) WatchIPRoutes(subscriber string, callback func(*bgp.ReachableRoute)) error {
+func (plugin *Plugin) WatchIPRoutes(subscriber string, callback func(*bgp.ReachableIPRoute)) error {
 	plugin.Log.Infof("Subscriber %s registering for watching of IPRoutes in %s.", subscriber, plugin.PluginName)
 	plugin.watcherCallbacks = append(plugin.watcherCallbacks, callback)
 	return nil
@@ -112,7 +118,7 @@ func (plugin *Plugin) WatchIPRoutes(subscriber string, callback func(*bgp.Reacha
 //startSession starts session on already running goBGP server
 func (plugin *Plugin) startSession() error {
 	if err := plugin.server.Start(&plugin.SessionConfig.Global); err != nil {
-		plugin.Log.Fatal("Failed to initialize go server", plugin.PluginName, err)
+		plugin.Log.Error("Failed to initialize go server", plugin.PluginName, err)
 		return err
 	}
 	return nil
@@ -122,7 +128,7 @@ func (plugin *Plugin) startSession() error {
 func (plugin *Plugin) addKnownNeighbors() error {
 	for _, neighbor := range plugin.SessionConfig.Neighbors {
 		if err := plugin.server.AddNeighbor(&neighbor); err != nil {
-			plugin.Log.Fatal("Failed to add go neighbour", plugin.PluginName, err)
+			plugin.Log.Error("Failed to add go neighbour", plugin.PluginName, err)
 			return err
 		}
 	}

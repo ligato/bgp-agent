@@ -20,8 +20,8 @@ import (
 	"net"
 )
 
-// ReachableRoute represents new learned route that could be used for route-based decisions.
-type ReachableRoute struct {
+// ReachableIPRoute represents new learned IP-based route that could be used for route-based decisions.
+type ReachableIPRoute struct {
 	As      uint32
 	Prefix  string
 	Nexthop net.IP
@@ -29,11 +29,9 @@ type ReachableRoute struct {
 
 // ToChan creates a callback that can be passed to the Watch function in order to receive
 // notifications through a channel.
-func ToChan(ch chan ReachableRoute, logger logging.Logger) func(info *ReachableRoute) {
-	return func(info *ReachableRoute) {
-		select {
-		case ch <- *info:
-			logger.Debugf("Callback function sending info %v to channel", *info)
-		}
+func ToChan(ch chan ReachableIPRoute, logger logging.Logger) func(info *ReachableIPRoute) {
+	return func(info *ReachableIPRoute) {
+		ch <- *info
+		logger.Debugf("Callback function sending info %v to channel", *info)
 	}
 }
