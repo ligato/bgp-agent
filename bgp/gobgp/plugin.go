@@ -26,19 +26,18 @@ import (
 
 // Plugin is GoBGP Ligato BGP Plugin implementation
 type Plugin struct {
+	Deps
 	server           *server.BgpServer
 	watcherCallbacks []func(*bgp.ReachableIPRoute)
 	stopWatch        chan bool
-	PluginName       string
-	Deps
 }
 
 // Deps combines all needed dependencies for Plugin struct. These dependencies should be injected into Plugin by using constructor's Deps parameter.
 type Deps struct {
 	local.PluginInfraDeps
-	SessionConfig    *config.Bgp
+	SessionConfig *config.Bgp
+	PluginName    string
 }
-
 
 func New(dependencies Deps) *Plugin {
 	return &Plugin{Deps: dependencies, watcherCallbacks: []func(*bgp.ReachableIPRoute){}}
@@ -52,7 +51,6 @@ func (plugin *Plugin) Init() error {
 		//TODO add config load in case of missing config injection
 		return fmt.Errorf("Can't init GoBGP plugin without configuration")
 	}
-	plugin.PluginName = plugin.SessionConfig.Global.Config.RouterId
 	plugin.server = server.NewBgpServer()
 	go plugin.server.Serve()
 
@@ -81,10 +79,11 @@ func (plugin *Plugin) watchChanges(watcher *server.Watcher) {
 			switch msg := ev.(type) {
 			case *server.WatchEventBestPath:
 				for _, path := range msg.PathList {
-					as, err := strconv.ParseUint(path.GetAsPath().String(), 10, 32)
+					asPath := path.GetAsPath().String()
+					as, err := strconv.ParseUint(asPath, 10, 32)
 					if err != nil {
-						plugin.Log.Fatal(err)
-						return
+						plugin.Log.Warnf("Ignoring Path '%s' due to parse error: %v", asPath, err)
+						continue
 					}
 					pathInfo := bgp.ReachableIPRoute{
 						As:      uint32(as),
