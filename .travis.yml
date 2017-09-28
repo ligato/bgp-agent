@@ -1,0 +1,14 @@
+dist: trusty
+sudo: required
+language: go
+
+go_import_path: github.com/ligato/bgp-agent
+
+go:
+  - 1.8.x
+
+before_install:
+  - make get-tools
+
+script:
+  - make checkstyle
