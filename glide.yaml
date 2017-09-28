@@ -1,0 +1,50 @@
+package: ligato-bgp-agent
+import:
+
+   # idxmap dependencies
+  - package: github.com/ligato/cn-infra
+    version: 517f64979feb8e5b9ffd7733ff7bf63b76fbb1df
+    subpackages:
+    - idxmap
+    - logging/logrus
+
+  # Gobgp dependencies
+  - package: github.com/osrg/gobgp
+    version: 2bad24a07764ff413b9222581c282ab12a16fdf1
+
+  # Gobgp dependencies
+  - package: github.com/armon/go-radix
+    version: 1fca145dffbcaa8fe914309b1ec0cfc67500fe61
+
+    # Gobgp dependencies
+  - package: github.com/eapache/channels
+    version: 47238d5aae8c0fefd518ef2bee46290909cf8263
+
+    # Gobgp dependencies
+  - package: github.com/influxdata/influxdb/client/v2
+    version: 2cac46ebbc24c40a712e77d305c3338cabf45a6a
+
+    # Gobgp dependencies
+  - package: github.com/satori/go.uuid
+    version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+
+    # Gobgp dependencies
+  - package: github.com/spf13/viper
+    version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
+
+    # Gobgp dependencies
+  - package: github.com/vishvananda/netlink
+    version: f5a6f697a596c788d474984a38a0ac4ba0719e93
+
+    # Gobgp dependencies
+  - package: gopkg.in/tomb.v2
+
+    # Gobgp dependencies
+  - package: golang.org/x/net
+    subpackages:
+    - context
+
+  - package: github.com/stretchr/testify/assert
+    version: master
+    subpackages:
+    - assert
