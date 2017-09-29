@@ -52,17 +52,6 @@ var (
 )
 
 func main() {
-	plugin, reg := New()
-	namedPlugins := []*core.NamedPlugin{{"ExampleNamedPlugin", plugin}}
-	agent := core.NewAgent(logroot.StandardLogger(), 1*time.Minute, namedPlugins...)
-
-	errorUtil.PanicIfError(agent.Start())
-	errorUtil.PanicIfError(sync.WaitCounterMatch(2*time.Minute, 1, &counter))
-	errorUtil.PanicIfError(agent.Stop())
-	reg.Close()
-}
-
-func New() (*gobgp.Plugin, bgp.WatchRegistration) {
 	goBgpPlugin := gobgp.New(gobgp.Deps{
 		PluginInfraDeps: *flavor.InfraDeps("example"),
 		SessionConfig:   goBgpConfig})
@@ -72,5 +61,12 @@ func New() (*gobgp.Plugin, bgp.WatchRegistration) {
 		atomic.AddUint32(&counter, 1)
 	})
 	errorUtil.PanicIfError(err)
-	return goBgpPlugin, reg
+
+	namedPlugins := []*core.NamedPlugin{{"ExampleNamedPlugin", goBgpPlugin}}
+	agent := core.NewAgent(logroot.StandardLogger(), 1*time.Minute, namedPlugins...)
+
+	errorUtil.PanicIfError(agent.Start())
+	errorUtil.PanicIfError(sync.WaitCounterMatch(2*time.Minute, 1, &counter))
+	errorUtil.PanicIfError(agent.Stop())
+	reg.Close()
 }
