@@ -28,26 +28,25 @@ import (
 // Plugin is GoBGP Ligato BGP Plugin implementation
 type Plugin struct {
 	Deps
-	server               *server.BgpServer
-	serverWatcher        *server.Watcher
-	subscribersCallbacks map[Subscriber]func(*bgp.ReachableIPRoute)
-	stopWatch            chan bool
-	watchWG              sync.WaitGroup // wait group that allows to wait until Watch loop is ended
+	server                *server.BgpServer
+	serverWatcher         *server.Watcher
+	watchersWithCallbacks map[watcherName]func(*bgp.ReachableIPRoute)
+	stopWatch             chan bool
+	watchWG               sync.WaitGroup // wait group that allows to wait until Watch loop is ended
 }
 
 // Deps combines all needed dependencies for Plugin struct. These dependencies should be injected into Plugin by using constructor's Deps parameter.
 type Deps struct {
 	local.PluginInfraDeps             // inject
 	SessionConfig         *config.Bgp // inject
-	PluginName            string      // inject
 }
 
-// Subscriber is by-name identification of registered watcher
-type Subscriber string
+// watcherName is by-name identification of registered watcher
+type watcherName string
 
 //New creates a GoBGP Ligato BGP Plugin implementation. Needed dependencies are injected into plugin implementation.
 func New(dependencies Deps) *Plugin {
-	return &Plugin{Deps: dependencies, subscribersCallbacks: map[Subscriber]func(*bgp.ReachableIPRoute){}}
+	return &Plugin{Deps: dependencies, watchersWithCallbacks: map[watcherName]func(*bgp.ReachableIPRoute){}}
 }
 
 //Init creates the gobgp server and checks if needed SessionConfig was injected and fails if it is not.
@@ -108,7 +107,7 @@ func (plugin *Plugin) watchChanges(watcher *server.Watcher) {
 						Nexthop: path.GetNexthop(),
 					}
 					plugin.Log.Debug("Fill channel with new path", pathInfo)
-					for _, callback := range plugin.subscribersCallbacks {
+					for _, callback := range plugin.watchersWithCallbacks {
 						callback(&pathInfo)
 					}
 				}
@@ -126,15 +125,15 @@ func (plugin *Plugin) Close() error {
 	return plugin.server.Stop()
 }
 
-//WatchIPRoutes subscribes consumer to notifications for any new learned IP-based routes.
-//Subscription is not retroactive, that means that any IP-based routes learned in the past are not send to new subscribers.
-//This also means that if you want be notified of all learned IP-based routes, you must subscribe before calling of
-//AfterInit(). In case of external(=not other plugin started with this plugin) subscribers this means before plugin start.
-//However, late subscribers are permitted (no error will be returned), but they can miss some learned IP-based routes.
-func (plugin *Plugin) WatchIPRoutes(subscriber Subscriber, callback func(*bgp.ReachableIPRoute)) (Subscription, error) {
-	plugin.Log.Infof("Subscriber %s registering for watching of IPRoutes in %s.", subscriber, plugin.PluginName)
-	plugin.subscribersCallbacks[subscriber] = callback
-	return &subscription{subscriber: subscriber, plugin: plugin}, nil
+//WatchIPRoutes register watcher to notifications for any new learned IP-based routes.
+//WatchRegistration is not retroactive, that means that any IP-based routes learned in the past are not send to new watchers.
+//This also means that if you want be notified of all learned IP-based routes, you must register before calling of
+//AfterInit(). In case of external(=not other plugin started with this plugin) watchers this means before plugin start.
+//However, late-registered watchers are permitted (no error will be returned), but they can miss some learned IP-based routes.
+func (plugin *Plugin) WatchIPRoutes(watcher string, callback func(*bgp.ReachableIPRoute)) (bgp.WatchRegistration, error) {
+	plugin.Log.Infof("Watcher %s registering for watching of IPRoutes in %s.", watcher, plugin.PluginName)
+	plugin.watchersWithCallbacks[watcherName(watcher)] = callback
+	return &watchRegistration{watcher: watcherName(watcher), plugin: plugin}, nil
 }
 
 //startSession starts session on already running goBGP server
@@ -158,23 +157,15 @@ func (plugin *Plugin) addKnownNeighbors() error {
 	return nil
 }
 
-// Subscription represents both-side-agreed agreement between Plugin and subscribers that binds Plugin to notify subscribers
-// about new learned IP-based routes.
-// Subscription implementation is meant for subscriber side as evidence about agreement and way how to access subscriber side
-// control upon agreement (i.e. to close it). Implementations could be not thread-safe.
-type Subscription interface {
-	//Close ends the agreement between Plugin and subscriber. Plugin stops sending watcher any further notifications.
-	Close() error
+// watchRegistration is Plugin's simple WatchRegistration implementation that is sent to watchers.
+// This implementation is not thread-safe.
+type watchRegistration struct {
+	watcher watcherName
+	plugin  *Plugin
 }
 
-// subscription is Plugin's simple Subscription implementation that is sent to watchers
-type subscription struct{
-	subscriber Subscriber
-	plugin *Plugin
-}
-
-//Close ends the agreement between Plugin and subscriber. Plugin stops sending watcher any further notifications.
-func (s *subscription) Close() error {
-	delete(s.plugin.subscribersCallbacks, s.subscriber)
+//Close ends the agreement between Plugin and watcher. Plugin stops sending watcher any further notifications.
+func (wr *watchRegistration) Close() error {
+	delete(wr.plugin.watchersWithCallbacks, wr.watcher)
 	return nil
 }
