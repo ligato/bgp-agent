@@ -52,41 +52,25 @@ var (
 )
 
 func main() {
-	namedPlugins := []*core.NamedPlugin{{"ExampleNamedPlugin", New()}}
+	plugin, reg := New()
+	namedPlugins := []*core.NamedPlugin{{"ExampleNamedPlugin", plugin}}
 	agent := core.NewAgent(logroot.StandardLogger(), 1*time.Minute, namedPlugins...)
 
 	errorUtil.PanicIfError(agent.Start())
 	errorUtil.PanicIfError(sync.WaitCounterMatch(2*time.Minute, 1, &counter))
 	errorUtil.PanicIfError(agent.Stop())
+	reg.Close()
 }
 
-type exampleWrapperPlugin struct {
-	goBgpPlugin *gobgp.Plugin
-}
-
-func New() *exampleWrapperPlugin {
+func New() (*gobgp.Plugin, bgp.WatchRegistration) {
 	goBgpPlugin := gobgp.New(gobgp.Deps{
 		PluginInfraDeps: *flavor.InfraDeps("example"),
 		SessionConfig:   goBgpConfig})
 
-	errorUtil.PanicIfError(goBgpPlugin.WatchIPRoutes("watcher", func(information *bgp.ReachableIPRoute) {
+	reg, err := goBgpPlugin.WatchIPRoutes("watcher", func(information *bgp.ReachableIPRoute) {
 		log.DefaultLogger().Infof("Agent received new path %v", information)
 		atomic.AddUint32(&counter, 1)
-	}))
-	return &exampleWrapperPlugin{goBgpPlugin: goBgpPlugin}
-}
-
-func (p *exampleWrapperPlugin) Init() error {
-	p.goBgpPlugin.Init()
-	return nil
-}
-
-func (p *exampleWrapperPlugin) AfterInit() error {
-	//errorUtil.PanicIfError(p.goBgpPlugin.AfterInit()) //FIXME
-	return nil
-}
-
-func (p *exampleWrapperPlugin) Close() error {
-	p.goBgpPlugin.Close()
-	return nil
+	})
+	errorUtil.PanicIfError(err)
+	return goBgpPlugin, reg
 }
