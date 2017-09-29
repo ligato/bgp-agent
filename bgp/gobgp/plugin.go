@@ -38,7 +38,7 @@ type Plugin struct {
 // Deps combines all needed dependencies for Plugin struct. These dependencies should be injected into Plugin by using constructor's Deps parameter.
 type Deps struct {
 	local.PluginInfraDeps             // inject
-	SessionConfig         *config.Bgp // inject
+	SessionConfig         *config.Bgp // optional inject (if not injected, it must be set using external config file)
 }
 
 // watcherName is by-name identification of registered watcher
@@ -52,8 +52,8 @@ func New(dependencies Deps) *Plugin {
 //Init creates the gobgp server and checks if needed SessionConfig was injected and fails if it is not.
 func (plugin *Plugin) Init() error {
 	plugin.Log.Debug("Init goBgp plugin")
+	//TODO if not config load from filesystem, use config injection, if config injection is missing then error
 	if plugin.SessionConfig == nil {
-		//TODO add config load in case of missing config injection
 		return fmt.Errorf("Can't init GoBGP plugin without configuration")
 	}
 	plugin.server = server.NewBgpServer()
