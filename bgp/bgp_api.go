@@ -27,6 +27,15 @@ type ReachableIPRoute struct {
 	Nexthop net.IP
 }
 
+// WatchRegistration represents both-side-agreed agreement between Plugin and watchers that binds Plugin to notify watchers
+// about new learned IP-based routes.
+// WatchRegistration implementation is meant for watcher side as evidence about agreement and way how to access watcher side
+// control upon agreement (i.e. to close it). Implementations don't have to be thread-safe.
+type WatchRegistration interface {
+	//Close ends the agreement between Plugin and watcher. Plugin stops sending watcher any further notifications.
+	Close() error
+}
+
 // ToChan creates a callback that can be passed to the Watch function in order to receive
 // notifications through a channel.
 func ToChan(ch chan ReachableIPRoute, logger logging.Logger) func(info *ReachableIPRoute) {
