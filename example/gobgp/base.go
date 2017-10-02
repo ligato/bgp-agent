@@ -18,19 +18,21 @@ package main
 import (
 	"github.com/ligato/bgp-agent/bgp"
 	"github.com/ligato/bgp-agent/bgp/gobgp"
-	errorUtil "github.com/ligato/bgp-agent/utils/error"
-	"github.com/ligato/bgp-agent/utils/sync"
 	"github.com/ligato/cn-infra/core"
 	"github.com/ligato/cn-infra/flavors/local"
 	"github.com/ligato/cn-infra/logging/logroot"
 	log "github.com/ligato/cn-infra/logging/logrus"
 	"github.com/osrg/gobgp/config"
-	"sync/atomic"
+	"os"
 	"time"
 )
 
+const (
+	goBgpPluginName   = "goBgpPlugin"
+	examplePluginName = "pluginExample"
+)
+
 var (
-	counter     = uint32(0)
 	goBgpConfig = &config.Bgp{
 		Global: config.Global{
 			Config: config.GlobalConfig{
@@ -40,7 +42,7 @@ var (
 			},
 		},
 		Neighbors: []config.Neighbor{
-			config.Neighbor{
+			{
 				Config: config.NeighborConfig{
 					PeerAs:          65001,
 					NeighborAddress: "172.18.0.2",
@@ -53,20 +55,48 @@ var (
 
 func main() {
 	goBgpPlugin := gobgp.New(gobgp.Deps{
-		PluginInfraDeps: *flavor.InfraDeps("example"),
+		PluginInfraDeps: *flavor.InfraDeps(goBgpPluginName),
 		SessionConfig:   goBgpConfig})
 
-	reg, err := goBgpPlugin.WatchIPRoutes("watcher", func(information *bgp.ReachableIPRoute) {
-		log.DefaultLogger().Infof("Agent received new path %v", information)
-		atomic.AddUint32(&counter, 1)
-	})
-	errorUtil.PanicIfError(err)
+	exPlugin := newExamplePlugin(goBgpPlugin)
 
-	namedPlugins := []*core.NamedPlugin{{"ExampleNamedPlugin", goBgpPlugin}}
+	namedPlugins := []*core.NamedPlugin{
+		{goBgpPlugin.PluginName, goBgpPlugin},
+		{exPlugin.PluginName, exPlugin},
+	}
+
 	agent := core.NewAgent(logroot.StandardLogger(), 1*time.Minute, namedPlugins...)
 
-	errorUtil.PanicIfError(agent.Start())
-	errorUtil.PanicIfError(sync.WaitCounterMatch(2*time.Minute, 1, &counter))
-	errorUtil.PanicIfError(agent.Stop())
-	reg.Close()
+	err := core.EventLoopWithInterrupt(agent, exPlugin.closeCh)
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
+type pluginExample struct {
+	local.PluginInfraDeps
+	reg         bgp.WatchRegistration
+	goBgpPlugin *gobgp.Plugin
+	closeCh     chan struct{}
+}
+
+func newExamplePlugin(plugin *gobgp.Plugin) *pluginExample {
+	closeCh := make(chan struct{})
+	return &pluginExample{
+		PluginInfraDeps: *flavor.InfraDeps(examplePluginName),
+		goBgpPlugin:     plugin,
+		closeCh:         closeCh}
+}
+
+func (plugin *pluginExample) Init() error {
+	reg, err := plugin.goBgpPlugin.WatchIPRoutes("watcher", func(information *bgp.ReachableIPRoute) {
+		log.DefaultLogger().Infof("Agent received newExamplePlugin path %v", information)
+		close(plugin.closeCh)
+	})
+	plugin.reg = reg
+	return err
+}
+
+func (plugin *pluginExample) Close() error {
+	return plugin.reg.Close()
 }
