@@ -1,4 +1,4 @@
-package: ligato-bgp-agent
+package: github.com/ligato/bgp-agent
 import:
 
    # idxmap dependencies
