@@ -109,8 +109,6 @@ Plugin Example and goBGP are created and passed to `Ligato CN-infra agent` for h
 
 ![arch](../../docs/imgs/bgpexamplelifecycle.png "Ligato BGP Plugin workflow")
 
-`Ligato BGP Plugin` workflow consist on 4 steps:
-
 <b>1a-1b</b> By goBGP plugin initialization, GoBGP server is created.
 
 <b>2a-2d</b> Example plugin is initialized. It calls `WatchIPRoutes(...)` to become registered watcher. GoBGP plugin registers the Example plugin as watcher and returns to it `WatchRegistration`. The `WatchRegistration` will serve later for registration cancellation.   
