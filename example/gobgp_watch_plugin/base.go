@@ -90,7 +90,7 @@ func newExamplePlugin(plugin *gobgp.Plugin) *pluginExample {
 
 func (plugin *pluginExample) Init() error {
 	reg, err := plugin.goBgpPlugin.WatchIPRoutes("watcher", func(information *bgp.ReachableIPRoute) {
-		log.DefaultLogger().Infof("Agent received newExamplePlugin path %v", information)
+		log.DefaultLogger().Infof("Agent received path %v", information)
 		close(plugin.closeCh)
 	})
 	plugin.reg = reg
