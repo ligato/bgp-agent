@@ -1,4 +1,7 @@
 # Ligato BGP Agent
+[![Go Report Card](https://goreportcard.com/badge/github.com/ligato/bgp-agent)](https://goreportcard.com/report/github.com/ligato/bgp-agent)
+[![GoDoc](https://godoc.org/github.com/ligato/bgp-agent?status.svg)](https://godoc.org/github.com/ligato/bgp-agent)
+[![GitHub license](https://img.shields.io/badge/license-Apache%20license%202.0-blue.svg)](https://github.com/ligato/bgp-agent/blob/master/LICENSE)
 
 `Ligato BGP Agent` is a BGP information provider. It provides BGP information in an unified format to allow to retrieve BGP information from different sources(different BGP frameworks, eg: GoBGP, ExaBGP) and supporting multiple extensions (different AFI/SAFIS ex: IPV4 / Unicast, IPV6 / Unicast).
 ## Architecture
