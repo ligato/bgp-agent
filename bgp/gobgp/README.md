@@ -1,6 +1,6 @@
 ## Ligato BGP GoBGP Plugin
 
-The `GoBGP plugin` is a `Ligato CN-Infra Plugin` implementation using [GoBGP](https://github.com/osrg/gobgp) Library as source of the BGP information. 
+The `Ligato GoBGP plugin` is a `Ligato CN-Infra Plugin` implementation using [GoBGP](https://github.com/osrg/gobgp) Library as source of the BGP information. 
 
 ![arch](../../docs/imgs/gobgpplugin.png "High Level Architecture of GoBGP plugin")
 
