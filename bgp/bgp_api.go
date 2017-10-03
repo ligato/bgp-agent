@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//Package bgp contains definition for Ligato BGP Agent and Ligato BGP Plugins
+//Package bgp contains definitions for Ligato BGP-Agent Plugins
 package bgp
 
 import (

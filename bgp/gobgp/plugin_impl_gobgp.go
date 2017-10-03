@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//Package gobgp contains Ligato GoBGP BGP Plugin implementation
+//Package gobgp contains Ligato GoBGP Plugin implementation
 package gobgp
 
 import (
