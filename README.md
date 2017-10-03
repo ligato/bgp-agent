@@ -1,4 +1,5 @@
 # Ligato BGP Agent
+[![Build Status](https://travis-ci.org/ligato/bgp-agent.svg?branch=master)](https://travis-ci.org/ligato/bgp-agent)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ligato/bgp-agent)](https://goreportcard.com/report/github.com/ligato/bgp-agent)
 [![GoDoc](https://godoc.org/github.com/ligato/bgp-agent?status.svg)](https://godoc.org/github.com/ligato/bgp-agent)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20license%202.0-blue.svg)](https://github.com/ligato/bgp-agent/blob/master/LICENSE)
