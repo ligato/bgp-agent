@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//Package gobgp contains executable main for agent workflow example
+//Package gobgp_watch_plugin contains executable main for agent workflow example
 package main
 
 import (
