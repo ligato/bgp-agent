@@ -1,6 +1,9 @@
 package: github.com/ligato/bgp-agent
 import:
 
+  - package: github.com/ghodss/yaml
+    version: v1.0.0
+
    # idxmap dependencies
   - package: github.com/ligato/cn-infra
     version: 517f64979feb8e5b9ffd7733ff7bf63b76fbb1df

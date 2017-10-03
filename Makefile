@@ -1,5 +1,11 @@
 include Makeroutines.mk
 
+# build all binaries
+build:
+	    @echo "# building"
+	    @go build -a ./bgp/...
+	    @echo "# done"
+
 # get required tools
 get-tools:
 	    @go get -u -f "github.com/alecthomas/gometalinter"
@@ -7,10 +13,12 @@ get-tools:
 
 # install dependencies
 install-dep:
+	@echo "# install dependencies"
 	$(call install_dependencies)
 
 # update dependencies
 update-dep:
+	@echo "# update dependencies"
 	$(call update_dependencies)
 
 # run checkstyle
@@ -19,10 +27,40 @@ checkstyle:
 	    @gometalinter --vendor --exclude=vendor --deadline 1m --enable-gc --disable=aligncheck --disable=gotype --exclude=mock ./...
 	    @echo "# done"
 
-# build all binaries
-build:
-	    @echo "# building"
-	    @go build -a ./bgp/...
+# build examples
+build-examples:
+		@echo "# building plugin examples"
+		@cd examples/gobgp_watch_plugin && go build
+
+# run checkstyle
+run-examples:
+	    @echo "# running examples"
+	    @make build-examples
+	    @./scripts/run_gobgp_watcher_examples.sh
 	    @echo "# done"
 
-.PHONY: get-tools install-dep update-dep checkstyle build
+# run checkstyle
+clean:
+	    @echo "# cleaning"
+		@rm -f examples/gobgp_watch_plugin/gobgp_watch_plugin
+		@rm -f docker/gobgp_route_reflector/gobgp-client-in-host/gobgp-client-in-host
+		@rm -f docker/gobgp_route_reflector/gobgp-client-in-host/log
+		@rm -f docker/gobgp_route_reflector/gobgp-client-in-docker/gobgp-client-in-docker
+		@rm -f docker/gobgp_route_reflector/gobgp-client-in-docker/log
+		@rm -f docker/gobgp_route_reflector/gobgp-benchmark/gobgp-benchmark
+		@rm -f docker/gobgp_route_reflector/gobgp-benchmark/log
+		@echo "# done"
+
+#run all
+all:
+	    @echo "# running all"
+	    @make get-tools
+	    @make install-dep
+	    @make update-dep
+	    @make checkstyle
+	    @make build
+	    @make build-examples
+	    @make run-examples
+	    @make clean
+
+.PHONY: build install-dep update-dep checkstyle coverage clean all

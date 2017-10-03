@@ -8,7 +8,9 @@ go:
   - 1.8.x
 
 before_install:
-  - make get-tools
+  - sudo add-apt-repository ppa:masterminds/glide -y
+  - sudo apt-get update -q
+  - sudo apt-get install glide -y
 
 script:
-  - make checkstyle
+  - make all

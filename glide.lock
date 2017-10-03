@@ -1,5 +1,5 @@
-hash: 79bf49db8caf7fe4e91ee2d125514c7518a5ef0bd8a437ead5971f53cf6e0fde
-updated: 2017-09-11T12:00:11.433811621+02:00
+hash: 50a648532d588cb4883fae7a8dd1e1b6854f80ad79a2b0ffcff94654f2fd55b5
+updated: 2017-10-03T12:17:23.140924664+02:00
 imports:
 - name: github.com/armon/go-radix
   version: 1fca145dffbcaa8fe914309b1ec0cfc67500fe61
@@ -9,20 +9,18 @@ imports:
   version: 44cc805cf13205b55f69e14bcb69867d1ae92f98
 - name: github.com/fsnotify/fsnotify
   version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+- name: github.com/ghodss/yaml
+  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/gogo/protobuf
-  version: fcdc5011193ff531a548e9b0301828d5a5b97fd8
+  version: a9cd0c35b97daf74d0ebf3514c5254814b2703b4
   subpackages:
   - proto
-- name: github.com/golang/mock
-  version: 18f6dd13ccdd227b8ebc546ca95cd62a02f3970c
-  subpackages:
-  - gomock
 - name: github.com/golang/protobuf
   version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
   - proto
 - name: github.com/hashicorp/hcl
-  version: 8f6b1344a92ff8877cf24a5de9177bf7d0a2a187
+  version: 68e816d1c783414e79bc65b3994d9ab6b0a722ab
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -41,13 +39,17 @@ imports:
 - name: github.com/ligato/cn-infra
   version: 517f64979feb8e5b9ffd7733ff7bf63b76fbb1df
   subpackages:
+  - config
   - core
   - datasync
+  - flavors/local
+  - health/statuscheck
+  - health/statuscheck/model/status
   - idxmap
-  - idxmap/mem
   - logging
   - logging/logroot
   - logging/logrus
+  - servicelabel
   - utils/safeclose
 - name: github.com/magiconair/properties
   version: 8d7837e64d3c1ee4e54a880c5a920ab4316fc90a
@@ -67,7 +69,7 @@ imports:
   - table
   - zebra
 - name: github.com/pelletier/go-toml
-  version: 9c1b4e331f1e3d98e72600677699fbe212cd6d16
+  version: 2009e44b6f182e34d8ce081ac2767622937ea3d4
 - name: github.com/satori/go.uuid
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/sirupsen/logrus
@@ -81,7 +83,7 @@ imports:
 - name: github.com/spf13/jwalterweatherman
   version: 12bd96e66386c1960ab0f74ced1362f66f552f7b
 - name: github.com/spf13/pflag
-  version: 7aff26db30c1be810f9de5038ec5ef96ac41fd7c
+  version: be7121dd7a937a85e1e4b1ddda6a3edce3466110
 - name: github.com/spf13/viper
   version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
 - name: github.com/stretchr/testify
@@ -94,17 +96,17 @@ imports:
   subpackages:
   - nl
 - name: github.com/vishvananda/netns
-  version: 54f0e4339ce73702a0607f49922aaa1e749b418d
+  version: 86bef332bfc3b59b7624a600bd53009ce91a9829
 - name: golang.org/x/net
   version: c8c74377599bd978aee1cf3b9b63a8634051cec2
   subpackages:
   - context
 - name: golang.org/x/sys
-  version: 9f7170bcd8e9f4d3691c06401119c46a769a1e03
+  version: 314a259e304ff91bd6985da2a7149bbf91237993
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: bd91bbf73e9a4a801adbfb97133c992678533126
+  version: 1cbadb444a806fd9430d14ad08967ed91da4fa0a
   subpackages:
   - transform
   - unicode/norm
@@ -112,12 +114,4 @@ imports:
   version: d5d1b5820637886def9eef33e03a27a9f166942c
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
-testImports:
-- name: github.com/davecgh/go-spew
-  version: 346938d642f2ec3594ed81d874461961cd0faa76
-  subpackages:
-  - spew
-- name: github.com/pmezard/go-difflib
-  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
-  subpackages:
-  - difflib
+testImports: []
