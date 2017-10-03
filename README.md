@@ -19,4 +19,8 @@ Clients can register directly to plugins, choosing what information they want to
 
 Currently, only [GoBGP plugin](bgp/gobgp/README.md) that exposes IPv4 reachable routes is available. ExaBGP,Quagga plugins are not implemented.
 
+## Documentation
+GoDoc can be browsed [online](https://godoc.org/github.com/ligato/bgp-agent).
 
+## Contribution:
+If you are interested in contributing, please see the [contribution guidelines](CONTRIBUTING.md).
