@@ -42,3 +42,4 @@ import "github.com/osrg/gobgp/config"
 	closeErr := watchRegistration.Close()
 ```
 
+For further usage please look into our [example](https://github.com/ligato/bgp-agent/tree/master/example/gobgp).
