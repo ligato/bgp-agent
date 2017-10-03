@@ -3,7 +3,7 @@
 The example demonstrates the usage of the `Ligato GoBGP Plugin`.
 ### Architecture
 ![arch](../../docs/imgs/dockerGoBGPExample.png "Ligato BGP Agent Example")
-Run the example itself locally and the [Route Reflector](../route-reflector-gobgp-docker) in docker container. The example will communicate with the Route reflector node(implemented by [GoBGP](https://github.com/osrg/gobgp)) using BGP protocol. Any new learned reachable routes from the Route reflector will be retrieved via the `Ligato GoBGP Plugin` and written to the console.
+Architecture consists of 2 `Ligato CN-Infra` plugins and the [Route Reflector](../route-reflector-gobgp-docker) in docker container. The lifecycle of plugins is controlled by [CN-Infra](https://github.com/ligato/cn-infra) Core component. The Example plugin will communicate with the `GoBGP plugin` and the `GoBGP plugin` will be communicating with Route reflector node(implemented by [GoBGP](https://github.com/osrg/gobgp)) using BGP protocol. Any new learned reachable routes from the Route reflector will be passed through the `GoBGP Plugin` to the Example plugin. The Example plugin will write received route to the console.
 
 ### Infrastructure setup
 To be able to run this example you must setup the infrastructure first.  
@@ -109,14 +109,14 @@ Plugin Example and goBGP are created and passed to `Ligato CN-infra agent` for h
 
 ![arch](../../docs/imgs/bgpexamplelifecycle.png "Ligato BGP Plugin workflow")
 
-<b>1a-1b</b> By goBGP plugin initialization, GoBGP server is created.
+<b>1.</b> By goBGP plugin initialization, GoBGP server is created.
 
-<b>2a-2d</b> Example plugin is initialized. It calls `WatchIPRoutes(...)` to become registered watcher. GoBGP plugin registers the Example plugin as watcher and returns to it `WatchRegistration`. The `WatchRegistration` will serve later for registration cancellation.   
+<b>2.</b> Example plugin is initialized. It calls `WatchIPRoutes(...)` to become registered watcher. GoBGP plugin registers the Example plugin as watcher and returns to it `WatchRegistration`. The `WatchRegistration` will serve later for registration cancellation.   
 
-<b>3a-3b</b> GoBGP plugin starts GoBGP server. From this point, the Example plugin will receive new advertized routes until registration cancelation (or GoBGP server stop).
+<b>3.</b> GoBGP plugin starts GoBGP server. From this point, the Example plugin will receive new advertized routes until registration cancelation (or GoBGP server stop).
 
-<b>4a-4c</b> Closing of the Example plugin will trigger registration cancellation (call to `Close()` on `WatchRegistration`).
+<b>4.</b> Closing of the Example plugin will trigger registration cancellation (call to `Close()` on `WatchRegistration`).
 
-<b>5a-5b</b> Closing of GoBGP plugin will also stop the GoBGP server.
+<b>5.</b> Closing of GoBGP plugin will also stop the GoBGP server.
 
 This workflow was examplary and the order of plugins in which it is called `Init()` is not important. Important is that all watcher plugins must register before the start of GoBGP server, i.e. in their `Init()`. Also order of closing is not important, because watcher either calls `Close()` on `WatchRegistration` and stop watching or GoBGP server stops and watcher won't get anything from that point on. 
