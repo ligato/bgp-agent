@@ -21,7 +21,6 @@ import (
 	"github.com/ligato/cn-infra/core"
 	"github.com/ligato/cn-infra/flavors/local"
 	"github.com/ligato/cn-infra/logging/logroot"
-	log "github.com/ligato/cn-infra/logging/logrus"
 	"github.com/osrg/gobgp/config"
 	"os"
 	"time"
@@ -90,7 +89,7 @@ func newExamplePlugin(plugin *gobgp.Plugin) *pluginExample {
 
 func (plugin *pluginExample) Init() error {
 	reg, err := plugin.goBgpPlugin.WatchIPRoutes("watcher", func(information *bgp.ReachableIPRoute) {
-		log.DefaultLogger().Infof("Agent received path %v", information)
+		plugin.Log.Infof("Agent received path %v", information)
 		close(plugin.closeCh)
 	})
 	plugin.reg = reg
