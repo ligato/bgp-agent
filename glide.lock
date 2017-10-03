@@ -1,5 +1,5 @@
-hash: 061c1a4f47d1558c426710935f6192fc6672a2b5776288ea83ce80e42fa4cfa9
-updated: 2017-10-04T18:01:02.834227169+02:00
+hash: a83ff95edf38fd8050203b311a7317013d9d2ed3ff3a4b1cc1aa9e8d07018eed
+updated: 2017-10-05T12:35:14.252882192+02:00
 imports:
 - name: github.com/armon/go-radix
   version: 1fca145dffbcaa8fe914309b1ec0cfc67500fe61
@@ -15,10 +15,6 @@ imports:
   version: a9cd0c35b97daf74d0ebf3514c5254814b2703b4
   subpackages:
   - proto
-- name: github.com/golang/mock
-  version: 18f6dd13ccdd227b8ebc546ca95cd62a02f3970c
-  subpackages:
-  - gomock
 - name: github.com/golang/protobuf
   version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
@@ -83,7 +79,10 @@ imports:
 - name: github.com/pelletier/go-toml
   version: 2009e44b6f182e34d8ce081ac2767622937ea3d4
 - name: github.com/satori/go.uuid
-  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: github.com/Sirupsen/logrus
+  version: 202f25545ea4cf9b191ff7f846df5d87c9382c2b
+  repo: https://github.com/sirupsen/logrus.git
 - name: github.com/sirupsen/logrus
   version: 202f25545ea4cf9b191ff7f846df5d87c9382c2b
 - name: github.com/spf13/afero
@@ -120,7 +119,7 @@ imports:
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 1cbadb444a806fd9430d14ad08967ed91da4fa0a
+  version: d82c1812e304abfeeabd31e995a115a2855bf642
   subpackages:
   - transform
   - unicode/norm
@@ -128,12 +127,4 @@ imports:
   version: d5d1b5820637886def9eef33e03a27a9f166942c
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
-testImports:
-- name: github.com/davecgh/go-spew
-  version: 346938d642f2ec3594ed81d874461961cd0faa76
-  subpackages:
-  - spew
-- name: github.com/pmezard/go-difflib
-  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
-  subpackages:
-  - difflib
+testImports: []

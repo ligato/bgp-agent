@@ -1,6 +1,9 @@
 package: github.com/ligato/bgp-agent
 import:
 
+  - package: github.com/ghodss/yaml
+    version: v1.0.0
+
    # idxmap dependencies
   - package: github.com/ligato/cn-infra
     version: d80416b19b308869c3395163e4783f63bbc96f2b
@@ -26,7 +29,7 @@ import:
 
     # Gobgp dependencies
   - package: github.com/satori/go.uuid
-    version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+    version: v1.1.0
 
     # Gobgp dependencies
   - package: github.com/spf13/viper
