@@ -52,13 +52,29 @@ func New(dependencies Deps) *Plugin {
 //Init creates the gobgp server and checks if needed SessionConfig was injected and fails if it is not.
 func (plugin *Plugin) Init() error {
 	plugin.Log.Debug("Init goBgp plugin")
-	//TODO if not config load from filesystem, use config injection, if config injection is missing then error
+	plugin.applyExternalConfig()
 	if plugin.SessionConfig == nil {
 		return fmt.Errorf("Can't init GoBGP plugin without configuration")
 	}
 	plugin.server = server.NewBgpServer()
 
 	return nil
+}
+
+// applyExternalConfig tries to find and load configuration from external filesystem and change it for injected configuration, because external configuration has higher priority.
+// If external configuration is not found or can't be loaded, plugin.SessionConfig is not changed. This means that previous injection of plugin.SessionConfig variable can be still used.
+func (plugin *Plugin) applyExternalConfig() {
+	var externalCfg *config.Bgp
+	found, err := plugin.PluginConfig.GetValue(externalCfg)	// It tries to lookup `PluginName + "-config"` in go run command flags.
+	if !found {
+		plugin.Log.Debug("External GoBGP plugin configuration was not found")
+		return
+	}
+	if err != nil {
+		plugin.Log.Debug("External GoBGP plugin configuration could not load", err)
+		return
+	}
+	plugin.SessionConfig = externalCfg
 }
 
 // AfterInit starts gobgp with dedicated goroutine for watching gobgp and forwarding best path reachable ip routes to registered watchers.
