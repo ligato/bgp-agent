@@ -50,4 +50,4 @@ import:
     - assert
 
   - package: github.com/ghodss/yaml
-    version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+    version: v1.0.0
