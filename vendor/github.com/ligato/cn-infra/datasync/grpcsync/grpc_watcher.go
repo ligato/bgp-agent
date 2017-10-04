@@ -28,27 +28,18 @@ import (
 )
 
 // NewAdapter creates a new instance of Adapter.
-func NewAdapter() *Adapter {
-	grpcServer := grpc.NewServer()
+func NewAdapter(grpcServer *grpc.Server) *Adapter {
 	//TODO grpcServer.RegisterCodec(json.NewCodec(), "application/json")
-	adapter := &Adapter{syncbase.NewWatcher(), grpcServer}
+	adapter := &Adapter{syncbase.NewRegistry(), grpcServer}
 	msg.RegisterDataMsgServiceServer(grpcServer, &DataMsgServiceServer{adapter})
 	//registerHTTPHandler(grpcServer)
 
-	go func() {
-		//TODO Close the tcp listening
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9192))
-		if err != nil {
-			logroot.StandardLogger().Error(err) //TODO
-		}
-		grpcServer.Serve(lis)
-	}()
 	return adapter
 }
 
 // Adapter is a GRPC transport adapter in front of Agent Plugins
 type Adapter struct {
-	base   *syncbase.Watcher
+	base   *syncbase.Registry
 	server *grpc.Server
 }
 

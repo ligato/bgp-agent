@@ -21,24 +21,31 @@ import (
 	"github.com/ligato/cn-infra/utils/safeclose"
 )
 
-// CompositeKVProtoWatcher is a slice of watchers
+// CompositeKVProtoWatcher is an adapter that allows to aggregate multiple
+// watchers (KeyValProtoWatcher) into one.
+// Watch request is delegated into all of them.
 type CompositeKVProtoWatcher struct {
 	Adapters []KeyValProtoWatcher
 }
 
-// CompositeKVProtoWriter is cumulative adapter which contains all available transport types
+// CompositeKVProtoWriter is an adapter that allows to aggregate multiple
+// writers (KeyProtoValWriter) into one.
+// Put request is delegated into all of them.
 type CompositeKVProtoWriter struct {
 	Adapters []KeyProtoValWriter
 }
 
-// AggregatedRegistration is cumulative adapter which contains all available transport types
+// AggregatedRegistration is adapter that allows to aggregate multiple
+// registrations (WatchRegistration) into one.
+// Close operation is applied collectively on all included registration.
 type AggregatedRegistration struct {
 	Registrations []WatchRegistration
 }
 
-// Watch subscribes to every transport available within transport aggregator
-func (ta *CompositeKVProtoWatcher) Watch(resyncName string, changeChan chan ChangeEvent, resyncChan chan ResyncEvent,
-	keyPrefixes ...string) (WatchRegistration, error) {
+// Watch subscribes to every transport available within transport aggregator.
+// The function implements KeyValProtoWatcher.Watch().
+func (ta *CompositeKVProtoWatcher) Watch(resyncName string, changeChan chan ChangeEvent,
+	resyncChan chan ResyncEvent, keyPrefixes ...string) (WatchRegistration, error) {
 	registrations := []WatchRegistration{}
 	for _, transport := range ta.Adapters {
 		watcherReg, err := transport.Watch(resyncName, changeChan, resyncChan, keyPrefixes...)
@@ -56,14 +63,15 @@ func (ta *CompositeKVProtoWatcher) Watch(resyncName string, changeChan chan Chan
 	}, nil
 }
 
-// Put to every available transport
-func (ta *CompositeKVProtoWriter) Put(key string, data proto.Message) error {
+// Put writes data to all aggregated transports.
+// This function implements KeyProtoValWriter.Put().
+func (ta *CompositeKVProtoWriter) Put(key string, data proto.Message, opts ...PutOption) error {
 	if len(ta.Adapters) == 0 {
 		return fmt.Errorf("No transport is available in aggregator")
 	}
 	var wasError error
 	for _, transport := range ta.Adapters {
-		err := transport.Put(key, data)
+		err := transport.Put(key, data, opts...)
 		if err != nil {
 			wasError = err
 		}
@@ -71,7 +79,8 @@ func (ta *CompositeKVProtoWriter) Put(key string, data proto.Message) error {
 	return wasError
 }
 
-// Close every registration under watch aggregator
+// Close every registration under the aggregator.
+// This function implements WatchRegistration.Close().
 func (wa *AggregatedRegistration) Close() error {
 	_, err := safeclose.CloseAll(wa.Registrations)
 	return err

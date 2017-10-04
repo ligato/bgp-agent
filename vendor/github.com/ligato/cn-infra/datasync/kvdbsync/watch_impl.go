@@ -36,7 +36,7 @@ type watchBrokerKeys struct {
 type watcher struct {
 	db   keyval.ProtoBroker
 	dbW  keyval.ProtoWatcher
-	base *syncbase.Watcher
+	base *syncbase.Registry
 }
 
 // WatchAndResyncBrokerKeys calls keyval watcher Watch() & resync Register()
@@ -119,7 +119,6 @@ func (keys *watchBrokerKeys) resync() error {
 	case <-time.After(4 * time.Second):
 		logroot.StandardLogger().Warn("Timeout of resync callback")
 	}
-
 	return nil
 }
 
