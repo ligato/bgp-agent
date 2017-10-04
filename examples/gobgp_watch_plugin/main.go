@@ -54,7 +54,7 @@ var (
 
 func main() {
 	goBgpPlugin := gobgp.New(gobgp.Deps{
-		PluginInfraDeps: *flavor.InfraDeps(goBgpPluginName),
+		PluginInfraDeps: *flavor.InfraDeps(goBgpPluginName, local.WithConf()),
 		SessionConfig:   goBgpConfig})
 
 	exPlugin := newExamplePlugin(goBgpPlugin)
