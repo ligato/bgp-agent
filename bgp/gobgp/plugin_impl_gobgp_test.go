@@ -62,12 +62,12 @@ func TestGoBGPPluginInfoPassing(t *testing.T) {
 	assertThat.NotNil(watchRegistration, "WatchRegistration must be non-nil to be able to close registration later")
 	lifecycleCloseChannel := startPluginLifecycle(goBGPPlugin, assertCorrectLifecycleEnd(assertThat, &lifecycleWG))
 	assertThat.Nil(waitForSessionEstablishment(routeReflector), "Session not established within timeout")
-	addNewRoute(routeReflector, prefix1, nextHop1, length)
+	assertThat.Nil(addNewRoute(routeReflector, prefix1, nextHop1, length), "Can't add new route")
 	assertThatChannelReceivesCorrectRoute(assertThat, channel)
 
 	//unregister watching -> send another path to Route reflector -> check that nothing came to watcher
-	watchRegistration.Close()
-	addNewRoute(routeReflector, prefix2, nextHop2, length)
+	assertThat.Nil(watchRegistration.Close(), "Closing resitration failed")
+	assertThat.Nil(addNewRoute(routeReflector, prefix2, nextHop2, length), "Can't add new route")
 	assertThatChannelDidntReceiveAnything(assertThat, channel)
 
 	// stop all
