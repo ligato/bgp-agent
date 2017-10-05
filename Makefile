@@ -35,6 +35,15 @@ checkstyle:
 	    @echo "# running code analysis"
 	    @gometalinter --vendor --exclude=vendor --deadline 1m --enable-gc --disable=aligncheck --disable=gotype --exclude=mock ./...
 	    @echo "# done"
+# run all tests
+test:
+	@echo "# running unit tests"
+	@go test $$(go list ./... | grep -v /vendor/)
+
+# get coverage percentage
+coverage:
+	@echo "# getting test coverage"
+	@go test -cover $$(go list ./... | grep -v /vendor/)
 
 # build examples
 build-examples:
@@ -72,4 +81,4 @@ all:
 	    @make run-examples
 	    @make clean
 
-.PHONY: build install-dep update-dep checkstyle coverage clean all run-examples
+.PHONY: build install-dep update-dep checkstyle coverage clean all run-examples test coverage
