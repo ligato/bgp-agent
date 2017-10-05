@@ -94,11 +94,6 @@ imports:
   version: be7121dd7a937a85e1e4b1ddda6a3edce3466110
 - name: github.com/spf13/viper
   version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
-- name: github.com/stretchr/testify
-  version: 890a5c3458b43e6104ff5da8dfa139d013d77544
-  subpackages:
-  - assert
-  - assert
 - name: github.com/unrolled/render
   version: a0ec58421ddf111bd7efd3b7087399ca7d5da2f1
 - name: github.com/vishvananda/netlink
