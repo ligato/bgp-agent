@@ -33,11 +33,14 @@ import (
 )
 
 const (
-	nextHop                 string = "10.0.0.1"
-	prefix                  string = "10.0.0.0"
+	nextHop1                string = "10.0.0.1"
+	nextHop2                string = "10.0.0.3"
+	prefix1                 string = "10.0.0.0"
+	prefix2                 string = "10.0.0.2"
 	length                  uint8  = 24
 	expectedReceivedAs             = uint32(65000)
 	maxSessionEstablishment        = 2 * time.Minute
+	timeoutForNotReceiving         = 5 * time.Second
 )
 
 var flavor = &local.FlavorLocal{}
@@ -54,11 +57,18 @@ func TestGoBGPPluginInfoPassing(t *testing.T) {
 	goBGPPlugin := createGoBGPPlugin(serverConf)
 
 	// watch -> start lifecycle of gobgp plugin -> send path to Route reflector -> check receiving on other end
-	goBGPPlugin.WatchIPRoutes("TestWatcher", bgp.ToChan(channel, logroot.StandardLogger()))
-	lifecycleCloseChannel := startPluginLifecycle(goBGPPlugin, assertCorrectLifecycleEnd(assertThat, lifecycleWG))
-	waitForSessionEstablishment(routeReflector)
-	addNewRoute(routeReflector, prefix, nextHop, length)
+	watchRegistration, registrationErr := goBGPPlugin.WatchIPRoutes("TestWatcher", bgp.ToChan(channel, logroot.StandardLogger()))
+	assertThat.Nil(registrationErr, "Can't properly register to watch IP routes")
+	assertThat.NotNil(watchRegistration, "WatchRegistration must be non-nil to be able to close registration later")
+	lifecycleCloseChannel := startPluginLifecycle(goBGPPlugin, assertCorrectLifecycleEnd(assertThat, &lifecycleWG))
+	assertThat.Nil(waitForSessionEstablishment(routeReflector), "Session not established within timeout")
+	addNewRoute(routeReflector, prefix1, nextHop1, length)
 	assertThatChannelReceivesCorrectRoute(assertThat, channel)
+
+	//unregister watching -> send another path to Route reflector -> check that nothing came to watcher
+	watchRegistration.Close()
+	addNewRoute(routeReflector, prefix2, nextHop2, length)
+	assertThatChannelDidntReceiveAnything(assertThat, channel)
 
 	// stop all
 	close(lifecycleCloseChannel) //gives command to stop gobgp lifecycle
@@ -68,8 +78,8 @@ func TestGoBGPPluginInfoPassing(t *testing.T) {
 
 // assertCorrectLifecycleEnd asserts that lifecycle controlled by agent finished without error.
 // This method is also used for synchronizing test run with lifecycle run, that means that above mentioned assertion happens within duration of test.
-func assertCorrectLifecycleEnd(assertThat *assert.Assertions, lifecycleWG sync.WaitGroup) func(err error) {
-	lifecycleWG.Add(1)       // adding 1 to waitgroup before lifecycle loop starts in another go routine
+func assertCorrectLifecycleEnd(assertThat *assert.Assertions, lifecycleWG *sync.WaitGroup) func(err error) {
+	lifecycleWG.Add(1) // adding 1 to waitgroup before lifecycle loop starts in another go routine
 	return func(err error) { // called insided lifecycle go routine just after ending the lifecycle
 		assertThat.Nil(err)
 		lifecycleWG.Done()
@@ -97,15 +107,28 @@ func createGoBGPPlugin(bgpConfig *config.Bgp) *gobgp.Plugin {
 		SessionConfig:   bgpConfig})
 }
 
-// assertThatChannelReceivesCorrectRoute waits for received route and then checks it for corretness
-func assertThatChannelReceivesCorrectRoute(assert *assert.Assertions, channel chan bgp.ReachableIPRoute) {
+// assertThatChannelReceivesCorrectRoute waits for received route and then checks it for correctness
+func assertThatChannelReceivesCorrectRoute(assertThat *assert.Assertions, channel chan bgp.ReachableIPRoute) {
 	receivedRoute := <-channel
 	logroot.StandardLogger().Println(receivedRoute)
 	logroot.StandardLogger().Debug("Agent received new route ", receivedRoute)
 
-	assert.Equal(expectedReceivedAs, receivedRoute.As)
-	assert.Equal(nextHop, receivedRoute.Nexthop.String())
-	assert.Equal(prefix+"/24", receivedRoute.Prefix)
+	assertThat.Equal(expectedReceivedAs, receivedRoute.As)
+	assertThat.Equal(nextHop1, receivedRoute.Nexthop.String())
+	assertThat.Equal(prefix1+"/24", receivedRoute.Prefix)
+}
+
+// assertThatChannelDidntReceiveAnything waits for given time (timeoutForNotReceiving constant) and if in that time period data flows in data channel, then it fails the test.
+func assertThatChannelDidntReceiveAnything(assertThat *assert.Assertions, dataChan chan bgp.ReachableIPRoute) {
+	timeChan := time.NewTimer(timeoutForNotReceiving).C
+	for {
+		select {
+		case <-timeChan:
+			return
+		case route := <-dataChan:
+			assertThat.Fail("Channel did receive route even if it should not. Route received: ", route)
+		}
+	}
 }
 
 // createAndStartRouteReflector creates and starts Route Reflector
