@@ -51,6 +51,3 @@ import:
     version: master
     subpackages:
     - assert
-
-  - package: github.com/ghodss/yaml
-    version: v1.0.0
