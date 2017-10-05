@@ -16,7 +16,7 @@ package bgp
 
 import (
 	"github.com/ligato/cn-infra/logging/logrus"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 	"net"
 	"reflect"
 	"testing"
@@ -27,16 +27,16 @@ import (
 // Test doesn't check logging capabilities of wrapping function.
 func TestToChan(t *testing.T) {
 	// prepare of tested instances/helper instances
-	assertThat := assert.New(t)
+	RegisterTestingT(t)
 	channel := make(chan ReachableIPRoute, 1)
 	wrappingFunc := ToChan(channel, logrus.DefaultLogger())
 
 	// testing ToChan's returned function
-	assertThat.Empty(channel)
+	Expect(channel).To(BeEmpty())
 	sent := ReachableIPRoute{As: 1, Prefix: "1.2.3.4/32", Nexthop: net.IPv4(192, 168, 1, 1)}
 	wrappingFunc(&sent)
-	assertThat.NotEmpty(channel)
+	Expect(channel).ToNot(BeEmpty())
 	received := <-channel
 	reflect.DeepEqual(sent, received)
-	assertThat.Empty(channel)
+	Expect(channel).To(BeEmpty())
 }

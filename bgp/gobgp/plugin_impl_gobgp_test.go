@@ -22,11 +22,11 @@ import (
 	"github.com/ligato/cn-infra/core"
 	"github.com/ligato/cn-infra/flavors/local"
 	"github.com/ligato/cn-infra/logging/logroot"
+	. "github.com/onsi/gomega"
 	"github.com/osrg/gobgp/config"
 	bgpPacket "github.com/osrg/gobgp/packet/bgp"
 	"github.com/osrg/gobgp/server"
 	"github.com/osrg/gobgp/table"
-	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 	"time"
@@ -48,42 +48,42 @@ var flavor = &local.FlavorLocal{}
 // TestGoBGPPluginInfoPassing tests gobgp plugin for the ability of retrieving of ReachableIPRoutes using BGP protocol and passing this information to its registered watchers.
 // Test is also testing the ability of watch unregistering.
 func TestGoBGPPluginInfoPassing(t *testing.T) {
-	// creating help variables
-	assertThat := assert.New(t)
+	// creating help variables/initialization
+	RegisterTestingT(t)
 	channel := make(chan bgp.ReachableIPRoute, 10)
 	var lifecycleWG sync.WaitGroup
 
 	// create components
 	routeReflector, err := createAndStartRouteReflector(routeReflectorConf)
-	assertThat.Nil(err, "Can't create or start route reflector")
+	Expect(err).To(BeNil(), "Can't create or start route reflector")
 	goBGPPlugin := createGoBGPPlugin(serverConf)
 
 	// watch -> start lifecycle of gobgp plugin -> send path to Route reflector -> check receiving on other end
 	watchRegistration, registrationErr := goBGPPlugin.WatchIPRoutes("TestWatcher", bgp.ToChan(channel, logroot.StandardLogger()))
-	assertThat.Nil(registrationErr, "Can't properly register to watch IP routes")
-	assertThat.NotNil(watchRegistration, "WatchRegistration must be non-nil to be able to close registration later")
-	lifecycleCloseChannel := startPluginLifecycle(goBGPPlugin, assertCorrectLifecycleEnd(assertThat, &lifecycleWG))
-	assertThat.Nil(waitForSessionEstablishment(routeReflector), "Session not established within timeout")
-	assertThat.Nil(addNewRoute(routeReflector, prefix1, nextHop1, length), "Can't add new route")
-	assertThatChannelReceivesCorrectRoute(assertThat, channel)
+	Expect(registrationErr).To(BeNil(), "Can't properly register to watch IP routes")
+	Expect(watchRegistration).NotTo(BeNil(), "WatchRegistration must be non-nil to be able to close registration later")
+	lifecycleCloseChannel := startPluginLifecycle(goBGPPlugin, assertCorrectLifecycleEnd(&lifecycleWG))
+	Expect(waitForSessionEstablishment(routeReflector)).To(BeNil(), "Session not established within timeout")
+	Expect(addNewRoute(routeReflector, prefix1, nextHop1, length)).To(BeNil(), "Can't add new route")
+	assertThatChannelReceivesCorrectRoute(channel)
 
 	//unregister watching -> send another path to Route reflector -> check that nothing came to watcher
-	assertThat.Nil(watchRegistration.Close(), "Closing resitration failed")
-	assertThat.Nil(addNewRoute(routeReflector, prefix2, nextHop2, length), "Can't add new route")
-	assertThatChannelDidntReceiveAnything(assertThat, channel)
+	Expect(watchRegistration.Close()).To(BeNil(), "Closing resitration failed")
+	Expect(addNewRoute(routeReflector, prefix2, nextHop2, length)).To(BeNil(), "Can't add new route")
+	assertThatChannelDidntReceiveAnything(channel, t)
 
 	// stop all
 	close(lifecycleCloseChannel) //gives command to stop gobgp lifecycle
 	lifecycleWG.Wait()           //waiting for real gobgp lifecycle stop (that means also for assertion of correct closing (assertCorrectLifecycleEnd(...))
-	assertThat.Nil(routeReflector.Stop())
+	Expect(routeReflector.Stop()).To(BeNil())
 }
 
 // assertCorrectLifecycleEnd asserts that lifecycle controlled by agent finished without error.
 // This method is also used for synchronizing test run with lifecycle run, that means that above mentioned assertion happens within duration of test.
-func assertCorrectLifecycleEnd(assertThat *assert.Assertions, lifecycleWG *sync.WaitGroup) func(err error) {
+func assertCorrectLifecycleEnd(lifecycleWG *sync.WaitGroup) func(err error) {
 	lifecycleWG.Add(1) // adding 1 to waitgroup before lifecycle loop starts in another go routine
 	return func(err error) { // called insided lifecycle go routine just after ending the lifecycle
-		assertThat.Nil(err)
+		Expect(err).To(BeNil())
 		lifecycleWG.Done()
 	}
 }
@@ -110,25 +110,25 @@ func createGoBGPPlugin(bgpConfig *config.Bgp) *gobgp.Plugin {
 }
 
 // assertThatChannelReceivesCorrectRoute waits for received route and then checks it for correctness
-func assertThatChannelReceivesCorrectRoute(assertThat *assert.Assertions, channel chan bgp.ReachableIPRoute) {
+func assertThatChannelReceivesCorrectRoute(channel chan bgp.ReachableIPRoute) {
 	receivedRoute := <-channel
 	logroot.StandardLogger().Println(receivedRoute)
 	logroot.StandardLogger().Debug("Agent received new route ", receivedRoute)
 
-	assertThat.Equal(expectedReceivedAs, receivedRoute.As)
-	assertThat.Equal(nextHop1, receivedRoute.Nexthop.String())
-	assertThat.Equal(prefix1+"/24", receivedRoute.Prefix)
+	Expect(receivedRoute.As).To(Equal(expectedReceivedAs))
+	Expect(receivedRoute.Nexthop.String()).To(Equal(nextHop1))
+	Expect(receivedRoute.Prefix).To(Equal(prefix1 + "/24"))
 }
 
 // assertThatChannelDidntReceiveAnything waits for given time (timeoutForNotReceiving constant) and if in that time period data flows in data channel, then it fails the test.
-func assertThatChannelDidntReceiveAnything(assertThat *assert.Assertions, dataChan chan bgp.ReachableIPRoute) {
+func assertThatChannelDidntReceiveAnything(dataChan chan bgp.ReachableIPRoute, t *testing.T) {
 	timeChan := time.NewTimer(timeoutForNotReceiving).C
 	for {
 		select {
 		case <-timeChan:
 			return
 		case route := <-dataChan:
-			assertThat.Fail("Channel did receive route even if it should not. Route received: ", route)
+			t.Fatal("Channel did receive route even if it should not. Route received: ", route)
 		}
 	}
 }
