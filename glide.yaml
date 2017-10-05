@@ -47,7 +47,6 @@ import:
     subpackages:
     - context
 
-  - package: github.com/stretchr/testify/assert
-    version: master
-    subpackages:
-    - assert
+    # test dependency
+  - package: github.com/onsi/gomega
+    version: 334b8f472b3af5d541c5642701c1e29e2126f486
