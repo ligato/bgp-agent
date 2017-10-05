@@ -22,6 +22,9 @@ import (
 	"testing"
 )
 
+// TestToChan tests ability of ToChan(...) function to create wrapping function that wraps given channel and forwards
+// all ReachableIPRoute data (given to the wrapping function by parameter) to the channel inside.
+// Test doesn't check logging capabilities of wrapping function.
 func TestToChan(t *testing.T) {
 	// prepare of tested instances/helper instances
 	assertThat := assert.New(t)

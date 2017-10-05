@@ -45,6 +45,8 @@ const (
 
 var flavor = &local.FlavorLocal{}
 
+// TestGoBGPPluginInfoPassing tests gobgp plugin for the ability of retrieving of ReachableIPRoutes using BGP protocol and passing this information to its registered watchers.
+// Test is also testing the ability of watch unregistering.
 func TestGoBGPPluginInfoPassing(t *testing.T) {
 	// creating help variables
 	assertThat := assert.New(t)
