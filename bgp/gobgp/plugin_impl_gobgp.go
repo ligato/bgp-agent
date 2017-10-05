@@ -62,16 +62,17 @@ func (plugin *Plugin) Init() error {
 }
 
 // applyExternalConfig tries to find and load configuration from external filesystem and change it for injected configuration, because external configuration has higher priority.
-// If external configuration is not found or can't be loaded, plugin.SessionConfig is not changed. This means that previous injection of plugin.SessionConfig variable can be still used.
+// If external configuration is not found or can't be loaded or other problem occur, plugin.SessionConfig is not changed. This means that previous injection of plugin.SessionConfig
+// variable can be still used.
 func (plugin *Plugin) applyExternalConfig() {
 	var externalCfg *config.Bgp
 	found, err := plugin.PluginConfig.GetValue(externalCfg)	// It tries to lookup `PluginName + "-config"` in go run command flags.
-	if !found {
-		plugin.Log.Debug("External GoBGP plugin configuration was not found")
+	if err != nil {
+		plugin.Log.Debug("External GoBGP plugin configuration could not load or other problem happened", err)
 		return
 	}
-	if err != nil {
-		plugin.Log.Debug("External GoBGP plugin configuration could not load", err)
+	if !found {
+		plugin.Log.Debug("External GoBGP plugin configuration was not found")
 		return
 	}
 	plugin.SessionConfig = externalCfg
