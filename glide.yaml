@@ -3,7 +3,7 @@ import:
 
    # idxmap dependencies
   - package: github.com/ligato/cn-infra
-    version: 517f64979feb8e5b9ffd7733ff7bf63b76fbb1df
+    version: d80416b19b308869c3395163e4783f63bbc96f2b
     subpackages:
     - idxmap
     - logging/logrus
@@ -48,3 +48,6 @@ import:
     version: master
     subpackages:
     - assert
+
+  - package: github.com/ghodss/yaml
+    version: v1.0.0
