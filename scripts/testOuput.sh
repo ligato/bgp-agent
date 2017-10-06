@@ -23,7 +23,10 @@ IFS="${PREV_IFS}"
 sleep 2
 IFS="
 "
-    echo "Testing $1"
+    echo "Output of $1:"
+    cat ${TMP_FILE}
+    echo ""
+    echo "Checking output of $1"
     rv=0
     # loop through expected lines
     for i in $2

@@ -70,10 +70,10 @@ build-examples:
 		@echo "# building plugin examples"
 		@cd examples/gobgp_watch_plugin && go build
 
-# run checkstyle
+# run examples
 run-examples:
-	    @echo "# running examples"
 	    @make build-examples
+	    @echo "# running examples"
 	    @./scripts/run_gobgp_watcher_examples.sh
 	    @echo "# done"
 
