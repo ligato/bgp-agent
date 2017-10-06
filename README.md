@@ -20,6 +20,16 @@ Clients can register directly to plugins, choosing what information they want to
 
 Currently, only [GoBGP plugin](bgp/gobgp/README.md) that exposes IPv4 reachable routes is available. ExaBGP,Quagga plugins are not implemented.
 
+## Quickstart
+For a quick start with the BGP Agent, you can use makefile and start examples
+```
+make run-examples
+```
+The command pulls needed docker images from [Dockerhub](https://hub.docker.com/r/ligato/gobgp-for-rr/), 
+setups networking, builds the examples, runs them, validates their output and cleans after them.
+
+You can check in the command output the most basic test, the [gobgp_watch_plugin](https://github.com/fgschwan/bgp-agent/tree/master/examples/gobgp_watch_plugin).
+
 ## Documentation
 GoDoc can be browsed [online](https://godoc.org/github.com/ligato/bgp-agent).
 
