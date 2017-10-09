@@ -12,31 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package bgp
+//Package bgp_test contains tests for API helper functions
+package bgp_test
 
 import (
-	"github.com/ligato/cn-infra/logging/logrus"
-	. "github.com/onsi/gomega"
-	"net"
-	"reflect"
 	"testing"
 )
 
 // TestToChan tests ability of ToChan(...) function to create wrapping function that wraps given channel and forwards
 // all ReachableIPRoute data (given to the wrapping function by parameter) to the channel inside.
 // Test doesn't check logging capabilities of wrapping function.
-func TestToChan(t *testing.T) {
-	// prepare of tested instances/helper instances
-	RegisterTestingT(t)
-	channel := make(chan ReachableIPRoute, 1)
-	wrappingFunc := ToChan(channel, logrus.DefaultLogger())
+func TestToChan(x *testing.T) {
+	t := TestHelper{golangTesting: x}
+	t.DefaultSetup()
 
-	// testing ToChan's returned function
-	Expect(channel).To(BeEmpty())
-	sent := ReachableIPRoute{As: 1, Prefix: "1.2.3.4/32", Nexthop: net.IPv4(192, 168, 1, 1)}
-	wrappingFunc(&sent)
-	Expect(channel).ToNot(BeEmpty())
-	received := <-channel
-	reflect.DeepEqual(sent, received)
-	Expect(channel).To(BeEmpty())
+	t.Given.WrappingFuncAsToChanResult()
+	t.When.SentRouteToWrappingFunc()
+	t.Then.ChannelReceiveIt()
 }
