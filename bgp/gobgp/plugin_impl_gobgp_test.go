@@ -45,6 +45,7 @@ const (
 
 // TestGoBGPPluginInfoPassing tests gobgp plugin for the ability of retrieving of ReachableIPRoutes using BGP protocol and passing this information to its registered watchers.
 // Test is also testing the ability of watch unregistering.
+// Test creates beside goBGP plugin also route reflector so that goBGP plugin can receive data from its BGP-protocol communication partner. Each invocation of test will create also new route reflector.
 func TestGoBGPPluginInfoPassing(t *testing.T) {
 	// creating help variables/initialization
 	RegisterTestingT(t)
