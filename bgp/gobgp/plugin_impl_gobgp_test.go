@@ -43,8 +43,6 @@ const (
 	timeoutForNotReceiving         = 5 * time.Second
 )
 
-var flavor = &local.FlavorLocal{}
-
 // TestGoBGPPluginInfoPassing tests gobgp plugin for the ability of retrieving of ReachableIPRoutes using BGP protocol and passing this information to its registered watchers.
 // Test is also testing the ability of watch unregistering.
 func TestGoBGPPluginInfoPassing(t *testing.T) {
@@ -104,6 +102,7 @@ func startPluginLifecycle(plugin *gobgp.Plugin, assertCorrectLifecycleEnd func(e
 
 // createGoBGPPlugin creates basic gobgp plugin
 func createGoBGPPlugin(bgpConfig *config.Bgp) *gobgp.Plugin {
+	flavor := &local.FlavorLocal{}
 	return gobgp.New(gobgp.Deps{
 		PluginInfraDeps: *flavor.InfraDeps("TestGoBGP", local.WithConf()),
 		SessionConfig:   bgpConfig})
