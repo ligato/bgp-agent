@@ -85,6 +85,7 @@ func (t *TestHelper) DefaultSetup() {
 	t.Given.vars = t.vars
 	t.When.vars = t.vars
 	t.Then.vars = t.vars
+	t.vars.golangT = t.golangTesting
 
 	// registering gomega
 	RegisterTestingT(t.vars.golangT)
