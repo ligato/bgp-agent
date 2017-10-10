@@ -83,10 +83,6 @@ clean:
 		@rm -f examples/gobgp_watch_plugin/gobgp_watch_plugin
 		@rm -f docker/gobgp_route_reflector/gobgp-client-in-host/gobgp-client-in-host
 		@rm -f docker/gobgp_route_reflector/gobgp-client-in-host/log
-		@rm -f docker/gobgp_route_reflector/gobgp-client-in-docker/gobgp-client-in-docker
-		@rm -f docker/gobgp_route_reflector/gobgp-client-in-docker/log
-		@rm -f docker/gobgp_route_reflector/gobgp-benchmark/gobgp-benchmark
-		@rm -f docker/gobgp_route_reflector/gobgp-benchmark/log
 		@echo "# done"
 
 #run all
