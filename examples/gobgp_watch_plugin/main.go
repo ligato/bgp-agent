@@ -83,7 +83,7 @@ type pluginExample struct {
 	closeCh     chan struct{}
 }
 
-// newExamplePlugin creates new pluginExample with reference to goBGPPlugin so it can use it later to register itself to goBGPPlugin as watcher.
+// newExamplePlugin creates new pluginExample with reference to goBGPPlugin(<plugin> param) so it can use it later to register itself to goBGPPlugin as watcher.
 func newExamplePlugin(plugin *gobgp.Plugin) *pluginExample {
 	closeCh := make(chan struct{})
 	return &pluginExample{

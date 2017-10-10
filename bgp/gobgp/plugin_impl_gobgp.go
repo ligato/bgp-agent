@@ -46,7 +46,7 @@ type Deps struct {
 // watcherName is by-name identification of registered watcher
 type watcherName string
 
-//New creates a GoBGP Ligato BGP Plugin implementation. Needed dependencies are injected into plugin implementation.
+//New creates a GoBGP Ligato BGP Plugin implementation. Needed <dependencies> are injected into plugin implementation.
 func New(dependencies Deps) *Plugin {
 	return &Plugin{Deps: dependencies, watchersWithCallbacks: map[watcherName]func(*bgp.ReachableIPRoute){}}
 }
@@ -102,7 +102,7 @@ func (plugin *Plugin) AfterInit() error {
 	return nil
 }
 
-// watchChanges watches for events from goBGP server, translates them to bgp.ReachableIPRoute and sends them to registered watchers.
+// watchChanges watches for events from goBGP server(using server <watcher>), translates them to bgp.ReachableIPRoute and sends them to registered watchers.
 func (plugin *Plugin) watchChanges(watcher *server.Watcher) {
 	defer plugin.watchWG.Done()
 
@@ -147,8 +147,8 @@ func (plugin *Plugin) Close() error {
 }
 
 //WatchIPRoutes register watcher to notifications for any new learned IP-based routes.
-//Watcher have to identify himself by name(watcher param) and provide callback so that GoBGP can sent information to watcher.
-//WatchIPRoutes returns bgp.WatchRegistration as way how to control the watcher-goBGPlugin agreement from the watcher side in the future.
+//Watcher have to identify himself by name(<watcher> param) and provide <callback> so that GoBGP can sent information to watcher.
+//WatchIPRoutes returns <bgp.WatchRegistration> as way how to control the watcher-goBGPlugin agreement from the watcher side in the future.
 //It also returns error to indicate failure, but currently for this plugin is not known use case of failure.
 //WatchRegistration is not retroactive, that means that any IP-based routes learned in the past are not send to new watchers.
 //This also means that if you want be notified of all learned IP-based routes, you must register before calling of

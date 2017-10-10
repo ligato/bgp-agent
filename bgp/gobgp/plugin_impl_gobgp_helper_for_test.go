@@ -205,8 +205,8 @@ func (w *When) StopWatchingAndAddNewRoute() {
 }
 
 // addNewRoute adds route to Route reflector.
-// New route is defined by prefix(full IPv4 address as string) with
-// prefixMaskLength(count of bit of network mask for prefix) and nextHop(full IPv4 address as string).
+// New route is defined by <prefix>(full IPv4 address as string) with
+// <prefixMaskLength>(count of bit of network mask for prefix) and <nextHop>(full IPv4 address as string).
 // It returns nonnill error if addition was not successful.
 func (w *When) addNewRoute(prefix string, nextHop string, prefixMaskLength uint8) error {
 	attrs := []bgpPacket.PathAttributeInterface{
