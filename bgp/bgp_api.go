@@ -38,6 +38,7 @@ type WatchRegistration interface {
 
 // ToChan creates a callback that can be passed to the Watch function in order to receive
 // notifications through a channel.
+// Function uses given logger for debug purposes to print received ReachableIPRoutes.
 func ToChan(ch chan ReachableIPRoute, logger logging.Logger) func(info *ReachableIPRoute) {
 	return func(info *ReachableIPRoute) {
 		ch <- *info

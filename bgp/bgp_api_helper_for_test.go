@@ -70,16 +70,21 @@ func (t *TestHelper) DefaultSetup() {
 	t.vars.channel = make(chan bgp.ReachableIPRoute, 1)
 }
 
+// WrappingFuncAsToChanResult adds Wrapping function (that is produced by bgp.ToChan) together with corresponding channel
+// (input for bgp.ToChan) to Given things that will be used in test later (see BDD Given).
 func (g *Given) WrappingFuncAsToChanResult() {
 	g.vars.wrappingFunc = bgp.ToChan(g.vars.channel, logrus.DefaultLogger())
 }
 
+// SentRouteToWrappingFunc creates route and passes it to previously Given wrapping function.
 func (w *When) SentRouteToWrappingFunc() {
 	w.vars.sentRoute = bgp.ReachableIPRoute{As: 1, Prefix: "1.2.3.4/32", Nexthop: net.IPv4(192, 168, 1, 1)}
 	w.vars.wrappingFunc(&w.vars.sentRoute)
 }
 
-func (t *Then) ChannelReceiveIt() {
+// ChannelReceivesIt assert that previously sent route to wrapping function is forwarded (or its copy is forwarded) to
+// channel that was input for wrapping function creation.
+func (t *Then) ChannelReceivesIt() {
 	Expect(t.vars.channel).ToNot(BeEmpty())
 	received := <-t.vars.channel
 	Expect(received).To(Equal(t.vars.sentRoute))
