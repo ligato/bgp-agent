@@ -1,5 +1,5 @@
 hash: a83ff95edf38fd8050203b311a7317013d9d2ed3ff3a4b1cc1aa9e8d07018eed
-updated: 2017-10-05T12:35:14.252882192+02:00
+updated: 2017-10-05T18:09:53.53818355+02:00
 imports:
 - name: github.com/armon/go-radix
   version: 1fca145dffbcaa8fe914309b1ec0cfc67500fe61
@@ -80,9 +80,6 @@ imports:
   version: 2009e44b6f182e34d8ce081ac2767622937ea3d4
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
-- name: github.com/Sirupsen/logrus
-  version: 202f25545ea4cf9b191ff7f846df5d87c9382c2b
-  repo: https://github.com/sirupsen/logrus.git
 - name: github.com/sirupsen/logrus
   version: 202f25545ea4cf9b191ff7f846df5d87c9382c2b
 - name: github.com/spf13/afero
@@ -97,11 +94,6 @@ imports:
   version: be7121dd7a937a85e1e4b1ddda6a3edce3466110
 - name: github.com/spf13/viper
   version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
-- name: github.com/stretchr/testify
-  version: 890a5c3458b43e6104ff5da8dfa139d013d77544
-  subpackages:
-  - assert
-  - assert
 - name: github.com/unrolled/render
   version: a0ec58421ddf111bd7efd3b7087399ca7d5da2f1
 - name: github.com/vishvananda/netlink
@@ -127,4 +119,18 @@ imports:
   version: d5d1b5820637886def9eef33e03a27a9f166942c
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
-testImports: []
+testImports:
+- name: github.com/onsi/gomega
+  version: 334b8f472b3af5d541c5642701c1e29e2126f486
+  subpackages:
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types

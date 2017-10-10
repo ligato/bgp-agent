@@ -1,6 +1,12 @@
 # Ligato GoBGP Plugin Example
 
 The example demonstrates the usage of the `Ligato GoBGP Plugin`.
+
+For quick setup and run of this and other examples you can use makefile:
+```
+make run-examples
+```
+For explanatory step-by-step procedure, keep reading.
 ### Architecture
 ![arch](../../docs/imgs/dockerGoBGPExample.png "Ligato BGP Agent Example")
 Architecture consists of 2 `Ligato CN-Infra` plugins and the [Route Reflector](../route-reflector-gobgp-docker) in docker container. The lifecycle of plugins is controlled by [CN-Infra](https://github.com/ligato/cn-infra) Core component. The Example plugin will communicate with the `GoBGP plugin` and the `GoBGP plugin` will be communicating with Route reflector node(implemented by [GoBGP](https://github.com/osrg/gobgp)) using BGP protocol. Any new learned reachable routes from the Route reflector will be passed through the `GoBGP Plugin` to the Example plugin. The Example plugin will write received route to the console.
@@ -16,37 +22,38 @@ go get github.com/ligato/bgp-agent
 ```
 Change the path to the  docker folder
 ```
-cd $GOPATH/src/github.com/ligato/bgp-agent/docker
+cd $GOPATH/src/github.com/ligato/bgp-agent/docker/gobgp_route_reflector
 ```
 Build the Route reflector docker image
 ```
 ./build-image-routereflector.sh
 ``` 
+or pull already created image from [Dockerhub](https://hub.docker.com/r/ligato/gobgp-for-rr/)
+```
+./pull-docker.sh
+```
 Now you should see something like this:
 
 ```
 REPOSITORY                 TAG                 IMAGE ID            CREATED             SIZE
-routereflector             latest              a6d47c8559da        11 seconds ago      982MB
+ligato/gobgp-for-rr        v1.24               20a55c982d9e        11 seconds ago      968MB
 ```
 Process of building of the images has downloaded also other images that served as base images in the creation process. You can delete these base images if you want.
 
 To be able to have static ip addresses for running docker images, we need to create separate network that can be used by docker.
 ```
+cd $GOPATH/src/github.com/ligato/bgp-agent/docker/gobgp_route_reflector/usage_scripts
 ./create-ligato-network-for-docker.sh
 ```    
 
 
 ### Example run    
 
-We will need 3 linux terminals. To differentiate commands in terminal we will use different [prompt string](http://www.linuxnix.com/linuxunix-shell-ps1-prompt-explained-in-detail) for each terminal:
+We will need 2 linux terminals. To differentiate commands in terminal we will use different [prompt string](http://www.linuxnix.com/linuxunix-shell-ps1-prompt-explained-in-detail) for each terminal:
 
-`[rr-bgp-server]$` 
+`[route-reflector]$` 
 
-* The terminal for BGP server inside the Route reflector docker container that acts as a Route reflector. We can see logs of the BGP server here.
-
-`[rr-manual-info-addition]$` 
-
-* The terminal for adding the prefix/nexthop information directly to the BGP server(acting like Route reflector) in the Route reflector docker container. 
+* The terminal for handling route reflector. We will start here the BGP server inside the Route reflector docker container that acts as a Route reflector. This terminal will be also used  for adding the prefix/nexthop information directly to the BGP server(acting like Route reflector) in the Route reflector docker container. 
 
 `[host-go-runtime]$`
 
@@ -56,41 +63,41 @@ Lets run the example:
 
 <b>1. Start the Route reflector docker containers.</b>
 
-Change the directory so we can use the helper scripts in the Route reflector docker folder 
+Change the directory to the BGP-Agent root
 
 ```
-[rr-bgp-server]$ cd $GOPATH/src/github.com/ligato/bgp-agent/docker
+[route-reflector]$ cd $GOPATH/src/github.com/ligato/bgp-agent
 ```
 Start the route reflector docker container
 ```
-[rr-bgp-server]$ ./start-routereflector-for-client-in-host.sh
+[route-reflector]$ ./docker/gobgp_route_reflector/usage_scripts/start-routereflector.sh gobgp-client-in-host
 ```
 
 <b>2. Run the go code example</b> 
 
 Switch to `[host-go-runtime]` terminal and change directory to gobgp example directory
 ```
-[host-go-runtime]$ cd $GOPATH/src/github.com/ligato/bgp-agent/example/gobgp
+[host-go-runtime]$ cd $GOPATH/src/github.com/ligato/bgp-agent/examples/gobgp_watch_plugin
 ```
 Run the main application
 ```
-[host-go-runtime]$ go run base.go
+[host-go-runtime]$ go run main.go
 ```
 It will initially take around ~20 seconds to establish session.Then it will be ready and waiting for any path advertizement reception.
 
 <b>3. Add new route information to the Route reflector</b>
 
-Switch to the ```[rr-manual-info-addition]``` terminal and change the directory so we can use the helper scripts in the route reflector docker folder
+Switch to the ```[route-reflector]``` terminal and change the directory so we can use the helper scripts
 ```
-[rr-manual-info-addition]$ cd $GOPATH/src/github.com/ligato/bgp-agent/docker
+[route-reflector]$ cd $GOPATH/src/github.com/ligato/bgp-agent/docker/gobgp_route_reflector/usage_scripts
 ```
 Connect to the bash console inside the Route reflector docker container
 ```
-[rr-manual-info-addition]$ ./connect-to-routereflector.sh
+[route-reflector]$ ./connect-to-routereflector.sh
 ```
 Add new prefix(`101.0.0.0/24`)/nexthop(`192.168.1.1`) information to the Route reflector
 ```
-[rr-manual-info-addition]$ gobgp global rib add -a ipv4 101.0.0.0/24 nexthop 101.0.10.1
+[route-reflector]$ gobgp global rib add -a ipv4 101.0.0.0/24 nexthop 101.0.10.1
 ``` 
 
 <b>4. Verify the advertizement of the path</b>
