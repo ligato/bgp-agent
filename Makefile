@@ -102,4 +102,4 @@ all:
 	    @make run-examples
 	    @make clean
 
-.PHONY: build install-dep update-dep checkstyle coverage clean run-examples test test-cover-without-report
+.PHONY: build get-tools install-dep update-dep checkstyle test test-cover test-cover-without-report build-examples run-examples clean all
