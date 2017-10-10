@@ -28,5 +28,5 @@ func TestToChan(x *testing.T) {
 
 	t.Given.WrappingFuncAsToChanResult()
 	t.When.SentRouteToWrappingFunc()
-	t.Then.ChannelReceiveIt()
+	t.Then.ChannelReceivesIt()
 }

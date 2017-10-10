@@ -52,6 +52,7 @@ var (
 	flavor = &local.FlavorLocal{}
 )
 
+// main is the main function for running the whole example
 func main() {
 	goBgpPlugin := gobgp.New(gobgp.Deps{
 		PluginInfraDeps: *flavor.InfraDeps(goBgpPluginName, local.WithConf()),
@@ -72,6 +73,9 @@ func main() {
 	}
 }
 
+// pluginExample is cn-infra plugin that serves as example watcher registered in goBGPplugin.
+// Purpose of this plugin is to show process of registration/unregistration of goBGPPlugin watchers and also how could be the data
+// received by the registered watchers.
 type pluginExample struct {
 	local.PluginInfraDeps
 	reg         bgp.WatchRegistration
@@ -79,6 +83,7 @@ type pluginExample struct {
 	closeCh     chan struct{}
 }
 
+// newExamplePlugin creates new pluginExample with reference to goBGPPlugin(<plugin> param) so it can use it later to register itself to goBGPPlugin as watcher.
 func newExamplePlugin(plugin *gobgp.Plugin) *pluginExample {
 	closeCh := make(chan struct{})
 	return &pluginExample{
@@ -87,6 +92,10 @@ func newExamplePlugin(plugin *gobgp.Plugin) *pluginExample {
 		closeCh:         closeCh}
 }
 
+// Init registers pluginExample as watcher in goBGPPlugin. Callback for registered pluginExample will receive first route
+// from goBGPPlugin and then stops the whole example.
+// In case of problems with watcher registration, error (forwarded from registration failure) is returned and initialization
+// of pluginExample fails.
 func (plugin *pluginExample) Init() error {
 	reg, err := plugin.goBgpPlugin.WatchIPRoutes("watcher", func(information *bgp.ReachableIPRoute) {
 		plugin.Log.Infof("Agent received path %v", information)
@@ -96,6 +105,8 @@ func (plugin *pluginExample) Init() error {
 	return err
 }
 
+// Close will unregister pluginExample as watcher in goBGPPlugin.
+// If unregister fails, pluginExample will fail too (with the same error).
 func (plugin *pluginExample) Close() error {
 	return plugin.reg.Close()
 }

@@ -25,7 +25,9 @@ import (
 	"sync"
 )
 
-// Plugin is GoBGP Ligato BGP Plugin implementation
+// Plugin is GoBGP Ligato BGP Plugin implementation. Purpose of this plugin is to retrieve BGP related information and
+// expose it to watchers that can register to this plugin. To be able to communicate using BGP communication protocol,
+// this plugin uses GoBGP library
 type Plugin struct {
 	Deps
 	server                *server.BgpServer
@@ -44,7 +46,7 @@ type Deps struct {
 // watcherName is by-name identification of registered watcher
 type watcherName string
 
-//New creates a GoBGP Ligato BGP Plugin implementation. Needed dependencies are injected into plugin implementation.
+//New creates a GoBGP Ligato BGP Plugin implementation. Needed <dependencies> are injected into plugin implementation.
 func New(dependencies Deps) *Plugin {
 	return &Plugin{Deps: dependencies, watchersWithCallbacks: map[watcherName]func(*bgp.ReachableIPRoute){}}
 }
@@ -79,7 +81,8 @@ func (plugin *Plugin) applyExternalConfig() {
 }
 
 // AfterInit starts gobgp with dedicated goroutine for watching gobgp and forwarding best path reachable ip routes to registered watchers.
-// After start of gobgp session, known neighbors from configuration are added to gobgp server.
+// After start of gobgp session, known neighbors from configuration are added to gobgp server. AfterInit fails if session start or
+// adding of known neighbors from configuration fails.
 // Due to fact that AfterInit is called once Init() of all plugins have returned without error, other plugins can be registered watchers
 // from the start of gobgp server if they call this plugin's WatchIPRoutes() in their Init(). In this way they won't miss any information
 // forwarded to registered watchers just because they registered too late.
@@ -99,7 +102,7 @@ func (plugin *Plugin) AfterInit() error {
 	return nil
 }
 
-// watchChanges watches for events from goBGP server, translates them to bgp.ReachableIPRoute and sends them to registered watchers.
+// watchChanges watches for events from goBGP server(using server <watcher>), translates them to bgp.ReachableIPRoute and sends them to registered watchers.
 func (plugin *Plugin) watchChanges(watcher *server.Watcher) {
 	defer plugin.watchWG.Done()
 
@@ -134,6 +137,7 @@ func (plugin *Plugin) watchChanges(watcher *server.Watcher) {
 }
 
 //Close stops dedicated goroutine for watching gobgp. Then stops watcher provider by gobgp server and finally stops that gobgp server itself.
+//Close will fail if bgpServer fails to stop.
 func (plugin *Plugin) Close() error {
 	plugin.Log.Info("Closing goBgp plugin ", plugin.PluginName)
 	close(plugin.stopWatch) //command to stop watching
@@ -143,6 +147,9 @@ func (plugin *Plugin) Close() error {
 }
 
 //WatchIPRoutes register watcher to notifications for any new learned IP-based routes.
+//Watcher have to identify himself by name(<watcher> param) and provide <callback> so that GoBGP can sent information to watcher.
+//WatchIPRoutes returns <bgp.WatchRegistration> as way how to control the watcher-goBGPlugin agreement from the watcher side in the future.
+//It also returns error to indicate failure, but currently for this plugin is not known use case of failure.
 //WatchRegistration is not retroactive, that means that any IP-based routes learned in the past are not send to new watchers.
 //This also means that if you want be notified of all learned IP-based routes, you must register before calling of
 //AfterInit(). In case of external(=not other plugin started with this plugin) watchers this means before plugin start.
@@ -153,7 +160,7 @@ func (plugin *Plugin) WatchIPRoutes(watcher string, callback func(*bgp.Reachable
 	return &watchRegistration{watcher: watcherName(watcher), plugin: plugin}, nil
 }
 
-//startSession starts session on already running goBGP server
+//startSession starts session on already running goBGP server. It fails when start of goBGP server fails.
 func (plugin *Plugin) startSession() error {
 	if err := plugin.server.Start(&plugin.SessionConfig.Global); err != nil {
 		plugin.Log.Error("Failed to initialize go server", plugin.PluginName, err)
@@ -162,7 +169,7 @@ func (plugin *Plugin) startSession() error {
 	return nil
 }
 
-// addKnownNeighbors configures goBGP server for known neighbors from config
+// addKnownNeighbors configures goBGP server for known neighbors from config. It fails when direct adding of neighbors to goBGP server fails.
 func (plugin *Plugin) addKnownNeighbors() error {
 	for _, neighbor := range plugin.SessionConfig.Neighbors {
 		if err := plugin.server.AddNeighbor(&neighbor); err != nil {
@@ -182,6 +189,7 @@ type watchRegistration struct {
 }
 
 //Close ends the agreement between Plugin and watcher. Plugin stops sending watcher any further notifications.
+//It returns failure, but current goBGP implementation doesn't have failure use case.
 func (wr *watchRegistration) Close() error {
 	delete(wr.plugin.watchersWithCallbacks, wr.watcher)
 	return nil

@@ -36,7 +36,7 @@ const (
 	nextHop2                string = "10.0.0.3"
 	prefix1                 string = "10.0.0.0"
 	prefix2                 string = "10.0.0.2"
-	length                  uint8  = 24
+	prefixMaskLength        uint8  = 24
 	expectedReceivedAs             = uint32(65000)
 	maxSessionEstablishment        = 2 * time.Minute
 	timeoutForReceiving            = 30 * time.Second
@@ -195,17 +195,20 @@ func (g *Given) startPluginLifecycle() {
 
 // AddNewRoute adds first constant-based route to route reflector and asserts success.
 func (w *When) AddNewRoute() {
-	Expect(w.addNewRoute(prefix1, nextHop1, length)).To(BeNil(), "Can't add new route")
+	Expect(w.addNewRoute(prefix1, nextHop1, prefixMaskLength)).To(BeNil(), "Can't add new route")
 }
 
 // StopWatchingAndAddNewRoute closes watch registration and adds second constant-based route to route reflector. For both actions success is asserted.
 func (w *When) StopWatchingAndAddNewRoute() {
 	Expect(w.vars.watchRegistration.Close()).To(BeNil(), "Closing registration failed")
-	Expect(w.addNewRoute(prefix2, nextHop2, length)).To(BeNil(), "Can't add new route")
+	Expect(w.addNewRoute(prefix2, nextHop2, prefixMaskLength)).To(BeNil(), "Can't add new route")
 }
 
-// addNewRoute adds route to Route reflector. It returns nonnill error if addition was not successful.
-func (w *When) addNewRoute(prefix string, nextHop string, length uint8) error {
+// addNewRoute adds route to Route reflector.
+// New route is defined by <prefix>(full IPv4 address as string) with
+// <prefixMaskLength>(count of bit of network mask for prefix) and <nextHop>(full IPv4 address as string).
+// It returns nonnill error if addition was not successful.
+func (w *When) addNewRoute(prefix string, nextHop string, prefixMaskLength uint8) error {
 	attrs := []bgpPacket.PathAttributeInterface{
 		bgpPacket.NewPathAttributeOrigin(0),
 		bgpPacket.NewPathAttributeNextHop(nextHop),
@@ -214,7 +217,7 @@ func (w *When) addNewRoute(prefix string, nextHop string, length uint8) error {
 	_, err := w.vars.routeReflector.AddPath("",
 		[]*table.Path{table.NewPath(
 			nil,
-			bgpPacket.NewIPAddrPrefix(length, prefix),
+			bgpPacket.NewIPAddrPrefix(prefixMaskLength, prefix),
 			false,
 			attrs,
 			time.Now(),
