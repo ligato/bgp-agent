@@ -1,6 +1,6 @@
 ## Usage scripts for GoBGP Route reflector docker
 
-The purpose of the scripts is to simplify work with GoBGP Route reflector docker image/container.
+The purpose of the scripts is to simplify work with GoBGP Route reflector docker image/container. These scripts are meant to run without `sudo` command, therefore the environment for docker must be [altered accordingly](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user).
 
 ##### Create new docker network
 Script creates new network that should be used by docker containers. The purpose of the network is to have more control over networking of docker containers. Default docker network i.e. doesn't allow to assing statis IP addresses to starting containers. 
