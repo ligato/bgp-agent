@@ -36,6 +36,20 @@ type WatchRegistration interface {
 	Close() error
 }
 
+// Watcher provides the ability to have external clients(watchers) that can register to given Watcher implementation.
+// Duty of Watcher implementation is to notify its clients(watchers) about new learned BGP information.
+type Watcher interface {
+	//WatchIPRoutes register watcher to notifications for any new learned IP-based routes.
+	//Watcher have to identify himself by name(<watcher> param) and provide <callback> so that GoBGP can sent information to watcher.
+	//WatchIPRoutes returns <bgp.WatchRegistration> as way how to control the watcher-goBGPlugin agreement from the watcher side in the future.
+	//It also returns error to indicate failure, but currently for this plugin is not known use case of failure.
+	//WatchRegistration is not retroactive, that means that any IP-based routes learned in the past are not send to new watchers.
+	//This also means that if you want be notified of all learned IP-based routes, you must register before calling of
+	//AfterInit(). In case of external(=not other plugin started with this plugin) watchers this means before plugin start.
+	//However, late-registered watchers are permitted (no error will be returned), but they can miss some learned IP-based routes.
+	WatchIPRoutes(watcher string, callback func(*ReachableIPRoute)) (WatchRegistration, error)
+}
+
 // ToChan creates a callback that can be passed to the Watch function in order to receive
 // notifications through the channel <ch>.
 // Function uses given logger for debug purposes to print received ReachableIPRoutes.
