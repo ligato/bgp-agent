@@ -82,7 +82,8 @@ clean:
 	    @echo "# cleaning"
 		@rm -f examples/gobgp_watch_plugin/gobgp_watch_plugin
 		@rm -f docker/gobgp_route_reflector/gobgp-client-in-host/gobgp-client-in-host
-		@rm -f docker/gobgp_route_reflector/gobgp-client-in-host/log
+		@rm -f docker/gobgp_route_reflector/usage_scripts/gobgp-client-in-host/log
+		@rm -f log
 		@echo "# done"
 
 #run all

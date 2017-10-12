@@ -33,7 +33,11 @@ echo "#### running go example (gobgp plugin,example plugin)"
 expected=("Agent received path &{65001 101.0.0.0/24 101.0.10.1}
 ")
 
-testOutput ./examples/gobgp_watch_plugin/gobgp_watch_plugin "${expected}"
+./examples/gobgp_watch_plugin/gobgp_watch_plugin &> log &
+sleep 20
+echo "$(less log)"
+echo "#### validating Go example output"
+testOutput "$(less log)" "${expected}"
 echo "done"
 
 echo ""
