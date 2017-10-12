@@ -9,7 +9,8 @@ The GoBGP Route reflector docker image is [basic golang docker image](https://hu
 The Route reflector image is used in [tests](https://github.com/ligato/bgp-agent/tree/master/examples/gobgp_watch_plugin) that are running automatically or manual.
 Predefined GoBGP configuration for docker container used in test can be found [here](https://github.com/ligato/bgp-agent/blob/master/docker/gobgp_route_reflector/usage_scripts/gobgp-client-in-host/gobgp.conf).
 
-This folder also contains some helper scripts:
+This folder also contains some helper scripts. These scripts are meant to run without `sudo` command, therefore the environment for docker must be [altered accordingly](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user).
+
 ##### Build Docker
 Script builds the docker image based on DockerFile.
 

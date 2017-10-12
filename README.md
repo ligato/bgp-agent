@@ -30,7 +30,7 @@ make run-examples
 The command pulls needed docker images from [Dockerhub](https://hub.docker.com/r/ligato/gobgp-for-rr/), 
 setups networking, builds the examples, runs them, validates their output and cleans after them.
 
-You can check in the command output the most basic test, the [gobgp_watch_plugin](https://github.com/fgschwan/bgp-agent/tree/master/examples/gobgp_watch_plugin).
+You can check in the command output the most basic test, the [gobgp_watch_plugin](https://github.com/ligato/bgp-agent/tree/master/examples/gobgp_watch_plugin).
 
 ## Documentation
 GoDoc can be browsed [online](https://godoc.org/github.com/ligato/bgp-agent).
