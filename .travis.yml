@@ -12,8 +12,10 @@ before_install:
   - sudo apt-get update -q
   - sudo apt-get install glide -y
   - go get github.com/mattn/goveralls
+  - sudo apt-get install npm && npm install -g markdown-link-check
 
 script:
+  - make check_links || true
   - make all
 
 after_success:

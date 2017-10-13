@@ -2,14 +2,6 @@ include Makeroutines.mk
 
 COVER_DIR=/tmp/
 
-# fix sirupsen/Sirupsen problem
-define fix_sirupsen_case_sensitivity_problem
-    @echo "# fixing sirupsen case sensitivity problem, please wait ..."
-    @-rm -rf vendor/github.com/Sirupsen
-    @-find ./ -type f -name "*.go" -exec sed -i -e 's/github.com\/Sirupsen\/logrus/github.com\/sirupsen\/logrus/g' {} \;
-endef
-
-
 # run all tests with coverage
 define test_cover_only
 	@echo "# running unit tests with coverage analysis"
@@ -18,6 +10,14 @@ define test_cover_only
 	@echo "# merging coverage results"
     @gocovmerge ${COVER_DIR}coverage_unit1.out ${COVER_DIR}coverage_unit2.out  > ${COVER_DIR}coverage.out
     @echo "# coverage data generated into ${COVER_DIR}coverage.out"
+    @echo "# done"
+endef
+
+# verify that links in markdown files are valid
+# requires npm install -g markdown-link-check
+define check_links_only
+    @echo "# checking links"
+    @./scripts/check_links.sh
     @echo "# done"
 endef
 
@@ -50,6 +50,9 @@ checkstyle:
 	    @echo "# running code analysis"
 	    @gometalinter --vendor --exclude=vendor --deadline 1m --enable-gc --disable=aligncheck --disable=gotype --disable=gotypex --exclude=mock ./...
 	    @echo "# done"
+
+check_links:
+	$(call check_links_only)
 
 # run all tests
 test:
@@ -99,4 +102,4 @@ all:
 	    @make run-examples
 	    @make clean
 
-.PHONY: build get-tools install-dep update-dep checkstyle test test-cover test-cover-without-report build-examples run-examples clean all
+.PHONY: build get-tools install-dep update-dep checkstyle test test-cover test-cover-without-report build-examples run-examples clean all check_links

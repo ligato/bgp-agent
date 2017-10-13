@@ -9,7 +9,7 @@ make run-examples
 For explanatory step-by-step procedure, keep reading.
 ### Architecture
 ![arch](../../docs/imgs/dockerGoBGPExample.png "Ligato BGP Agent Example")
-Architecture consists of 2 `Ligato CN-Infra` plugins and the [Route Reflector](../route-reflector-gobgp-docker) in docker container. The lifecycle of plugins is controlled by [CN-Infra](https://github.com/ligato/cn-infra) Core component. The Example plugin will communicate with the `GoBGP plugin` and the `GoBGP plugin` will be communicating with Route reflector node(implemented by [GoBGP](https://github.com/osrg/gobgp)) using BGP protocol. Any new learned reachable routes from the Route reflector will be passed through the `GoBGP Plugin` to the Example plugin. The Example plugin will write received route to the console.
+Architecture consists of 2 `Ligato CN-Infra` plugins and the [Route Reflector](../../docker/gobgp_route_reflector/README.md) in docker container. The lifecycle of plugins is controlled by [CN-Infra](https://github.com/ligato/cn-infra) Core component. The Example plugin will communicate with the `GoBGP plugin` and the `GoBGP plugin` will be communicating with Route reflector node(implemented by [GoBGP](https://github.com/osrg/gobgp)) using BGP protocol. Any new learned reachable routes from the Route reflector will be passed through the `GoBGP Plugin` to the Example plugin. The Example plugin will write received route to the console.
 
 ### Infrastructure setup
 To be able to run this example you must setup the infrastructure first.  
