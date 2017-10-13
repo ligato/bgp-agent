@@ -16,3 +16,10 @@ define update_dependencies
 	@echo "# glide cache cleared"
 	@glide install --strip-vendor
 endef
+
+# fix sirupsen/Sirupsen problem
+define fix_sirupsen_case_sensitivity_problem
+    @echo "# fixing sirupsen case sensitivity problem, please wait ..."
+    @-rm -rf vendor/github.com/Sirupsen
+    @-find ./ -type f -name "*.go" -exec sed -i -e 's/github.com\/Sirupsen\/logrus/github.com\/sirupsen\/logrus/g' {} \;
+endef
