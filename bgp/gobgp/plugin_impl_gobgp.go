@@ -77,7 +77,7 @@ func (plugin *Plugin) Init() error {
 		plugin.Log.Debug("External GoBGP plugin configuration was not found")
 		return
 	}
-	plugin.SessionConfig = externalCfg
+	plugin.SessionConfig = &externalCfg
 }
 
 // AfterInit starts gobgp with dedicated goroutine for watching gobgp and forwarding best path reachable ip routes to registered watchers.
